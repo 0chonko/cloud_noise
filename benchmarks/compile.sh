@@ -57,6 +57,8 @@ done
 # Compile netgauge
 pushd netgauge
     ./configure ${NG_CONFIGURE_FLAGS}
+    echo ${NG_CONFIGURE_FLAGS}
+    echo AIAIAIAIAIAIAIAIAIAA
     make
     if [ ! -f "netgauge" ]; then
         echo "${RED}[Error] netgauge compilation failed, please check error messages above.${NC}"

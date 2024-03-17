@@ -1,0 +1,44 @@
+Allocated nodes: tcn117
+tcn118
+srun: defined options
+srun: -------------------- --------------------
+srun: (null)              : tcn[117-118]
+srun: export              : ALL
+srun: jobid               : 5515309
+srun: job-name            : run_all.sh
+srun: mem-per-cpu         : 1792
+srun: mpi                 : pmix
+srun: nodes               : 2
+srun: ntasks-per-node     : 1
+srun: verbose             : 1
+srun: -------------------- --------------------
+srun: end of defined options
+srun: jobid 5515309: nodes(2):`tcn[117-118]', cpu counts: 128(x2)
+srun: CpuBindType=(null type)
+srun: launching StepId=5515309.0 on host tcn117, 1 tasks: 0
+srun: launching StepId=5515309.0 on host tcn118, 1 tasks: 1
+srun: route/default: init: route default plugin loaded
+srun: topology/tree: init: topology tree plugin loaded
+srun: Node tcn117, 1 tasks started
+tcn117.local.snellius.surf.nl
+srun: Received task exit notification for 1 task of StepId=5515309.0 (status=0x0000).
+srun: tcn117: task 0: Completed
+srun: Node tcn118, 1 tasks started
+tcn118.local.snellius.surf.nl
+srun: Received task exit notification for 1 task of StepId=5515309.0 (status=0x0000).
+srun: tcn118: task 1: Completed
+
+JOB STATISTICS
+==============
+Job ID: 5515309
+Cluster: snellius
+User/Group: gsavchenko/gsavchenko
+State: RUNNING
+Nodes: 2
+Cores per node: 128
+CPU Utilized: 00:00:00
+CPU Efficiency: 0.00% of 00:51:12 core-walltime
+Job Wall-clock time: 00:00:12
+Memory Utilized: 0.00 MB (estimated maximum)
+Memory Efficiency: 0.00% of 448.00 GB (1.75 GB/core)
+WARNING: Efficiency statistics may be misleading for RUNNING jobs.
