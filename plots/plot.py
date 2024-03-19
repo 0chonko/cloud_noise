@@ -29,7 +29,7 @@ sns.set_style("whitegrid")
 
 plot_ci = "sd"
 
-providers = ["snellius"]
+providers = ["snellius", "snellius-long-rome", "snellius-long-genoa", "snellius-short-genoa"]
 instances = ["HPC"]
 placements = ["Same Rack", "Different Racks"]
 times = ["Night", "Day"]
@@ -44,6 +44,9 @@ instance_type_t = {}
 # instance_type_t["Alps"] = "HPC (Metal)"
 # instance_type_t["DEEP-EST"] = "HPC (Metal)"
 instance_type_t["snellius"] = "HPC"
+instance_type_t["snellius-long-rome"] = "HPC"
+instance_type_t["snellius-long-genoa"] = "HPC"
+instance_type_t["snellius-short-genoa"] = "HPC"
 
 placement_t = {}
 # placement_t["GCP"] = "Same Rack"
@@ -54,6 +57,9 @@ placement_t = {}
 # placement_t["Alps"] = "Same Rack"
 # placement_t["DEEP-EST"] = "Same Rack"
 placement_t["snellius"] = "Same Rack"
+placement_t["snellius-long-rome"] = "Same Rack"
+placement_t["snellius-long-genoa"] = "Same Rack"
+placement_t["snellius-short-genoa"] = "Same Rack"
 
 time_t = {}
 # time_t["GCP"] = "Day"
@@ -64,6 +70,9 @@ time_t = {}
 # time_t["Alps"] = "Day"
 # time_t["DEEP-EST"] = "Day"
 time_t["snellius"] = "Day"
+time_t["snellius-long-rome"] = "Day"
+time_t["snellius-long-genoa"] = "Day"
+time_t["snellius-short-genoa"] = "Day"
 
 
 metric_human = {}
@@ -101,6 +110,12 @@ def fname(name):
         return "hpc200"
     elif name =="snellius":
         return "snellius"
+    elif name == "snellius-long-genoa":
+        return "snellius-long-genoa"
+    elif name == "snellius-long-rome":
+        return "snellius-long-rome"
+    elif name == "snellius-short-genoa":
+        return "snellius-short-genoa"
     elif name == "Same Rack":
         return "same_rack"
     elif name == "Different Racks":
@@ -538,7 +553,7 @@ def plot_paper_striping(stripe_or_conc="stripe"):
         i = 0
         handles = None
         labels = None
-        for provider in ["snellius"]:
+        for provider in ["snellius","snellius-long-rome", "snellius-long-genoa", "snellius-short-genoa"]:
             # Get data
             df = pd.DataFrame()
             for conc in [1, 2, 4, 8, 16]:
@@ -964,7 +979,7 @@ def plot_noise_net_alltime(lat_or_bw, plot_type):
             lat_or_bw_long = "Bandwidth (Gb/s)"
 
         #for provider in providers:    
-        for provider in ["snellius"]:    
+        for provider in ["snellius","snellius-long-rome", "snellius-long-genoa", "snellius-short-genoa"]:    
             # Create sub frames
             df = load_all(lat_or_bw)
             df = filter_provider(df, provider)
@@ -1019,6 +1034,10 @@ def plot_paper_uni_vs_bi():
         stripes["Alps"] = 1
         stripes["DEEP-EST"] = 1
         stripes["snellius"] = 1
+        stripes["snellius-long-rome"] = 1
+        stripes["snellius-long-genoa"] = 1
+        stripes["snellius-short-genoa"] = 1
+
 
         opt_msg_size_uni = {}
         opt_msg_size_uni["GCP"] = "16MiB"
@@ -1029,6 +1048,9 @@ def plot_paper_uni_vs_bi():
         opt_msg_size_uni["Alps"] = "16MiB"
         opt_msg_size_uni["DEEP-EST"] = "16MiB"
         opt_msg_size_uni["snellius"] = "16MiB"
+        opt_msg_size_uni["snellius-long-rome"] = "16MiB"
+        opt_msg_size_uni["snellius-long-genoa"] = "16MiB"
+        opt_msg_size_uni["snellius-short-genoa"] = "16MiB"
         
         opt_msg_size_bi = {}
         opt_msg_size_bi["GCP"] = "16MiB"
@@ -1039,6 +1061,9 @@ def plot_paper_uni_vs_bi():
         opt_msg_size_bi["Alps"] = "16MiB"        
         opt_msg_size_bi["DEEP-EST"] = "16MiB"    
         opt_msg_size_bi["snellius"] = "16MiB"
+        opt_msg_size_bi["snellius-long-rome"] = "16MiB"
+        opt_msg_size_bi["snellius-long-genoa"] = "16MiB"
+        opt_msg_size_bi["snellius-short-genoa"] = "16MiB"
 
         for provider in providers:
             # Get data 
@@ -1164,7 +1189,7 @@ def plot_paper_noise_long_instance_type(data_type, data_type_human):
     i = 0
     providers_iterate = providers
     if not "os" in data_type:
-        providers_iterate = ["snellius"]
+        providers_iterate = ["snellius","snellius-long-rome", "snellius-long-genoa", "snellius-short-genoa"]
     for provider in providers_iterate:
         df = pd.DataFrame()
         j = 0
@@ -1232,7 +1257,7 @@ def plot_paper_noise_long_time_alloc(data_type, data_type_human):
     i = 0
     palette_dict = {}
     legend_elements = []
-    markers = {"snellius" : 'D'}
+    markers = {"snellius" : 'D', "snellius-long-rome" : 's', "snellius-long-genoa" : '^', "snellius-short-genoa" : 'o'}
     for provider in providers:
         palette_dict[provider] = sns.color_palette()[i]    
         legend_elements += [Line2D([0], [0], marker=markers[provider], lw=0, color=sns.color_palette()[i], label=provider)]
@@ -1245,7 +1270,7 @@ def plot_paper_noise_long_time_alloc(data_type, data_type_human):
             #ax = axes[int(i / cols)][i % cols]
             ax = axes[i]
             ax.set_title(placement)
-            for provider in ["snellius"]:
+            for provider in ["snellius","snellius-long-rome", "snellius-long-genoa", "snellius-short-genoa"]:
                 df_tmp = get_noise_single(provider, instance_type_t[provider], placement, time, data_type, ax, j, kde)
                 if df_tmp is not None:
                     df = pd.concat([df, df_tmp])
@@ -1348,16 +1373,17 @@ def main():
     with open("../data/description.csv", mode='r') as infile:
         reader = csv.reader(infile)    
         global paths
-        paths = {(rows[0],rows[1],rows[2],rows[3]):"" + rows[4] for rows in reader}
+        paths = {(rows[0],rows[1],rows[2],rows[3]):"" + rows[4] for rows in reader if len(rows) >= 5}
+        print("your path $$$$$$")
         print(paths)
 
     if args.full:
         # plot_noise("noise_lat", "Latency (us)")
         # plot_noise("noise_bw", "Bandwidth (Gb/s)")
         # plot_noise("os_noise", "Detour (us)")
-        plot_noise_long("noise_lat", "Latency (us)")
-        plot_noise_long("noise_bw", "Bandwidth (Gb/s)")    
-        plot_noise_long("os_noise", "Detour (us)")    
+        # plot_noise_long("noise_lat", "Latency (us)")
+        # plot_noise_long("noise_bw", "Bandwidth (Gb/s)")    
+        # plot_noise_long("os_noise", "Detour (us)")    
 
         for metric in ["unidirectional_lat", "unidirectional_bw", "bidirectional_lat", "bidirectional_bw"]:
             plot_lat_bw(metric, metric_human[metric], "any", "any")
@@ -1382,7 +1408,7 @@ def main():
         print("noise_lat")
         # plot_noise_long("noise_lat", "Latency (us)")
         # plot_paper_lat_bw()
-        plot_noise_long("noise_bw", "Bandwidth (Gb/s)")            
+        # plot_noise_long("noise_bw", "Bandwidth (Gb/s)")            
         #for bol in ["noise_bw", "noise_lat"]:
         #    plot_noise_net_alltime(bol, "violin")
         #    #plot_noise_net_alltime(bol, "box")        
