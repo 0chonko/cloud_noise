@@ -1,0 +1,38 @@
+srun: job 5579181 queued and waiting for resources
+srun: job 5579181 has been allocated resources
+slurmstepd: error: execve(): /gpfs/home1/gsavchenko/bench_2/cloud_noise/./run.sh: No such file or directory
+slurmstepd: error: execve(): /gpfs/home1/gsavchenko/bench_2/cloud_noise/./run.sh: No such file or directory
+slurmstepd: error: execve(): /gpfs/home1/gsavchenko/bench_2/cloud_noise/./run.sh: No such file or directory
+slurmstepd: error: execve(): /gpfs/home1/gsavchenko/bench_2/cloud_noise/./run.sh: No such file or directory
+slurmstepd: error: execve(): /gpfs/home1/gsavchenko/bench_2/cloud_noise/./run.sh: No such file or directory
+slurmstepd: error: execve(): /gpfs/home1/gsavchenko/bench_2/cloud_noise/./run.sh: No such file or directory
+slurmstepd: error: execve(): /gpfs/home1/gsavchenko/bench_2/cloud_noise/./run.sh: No such file or directory
+slurmstepd: error: execve(): /gpfs/home1/gsavchenko/bench_2/cloud_noise/./run.sh: No such file or directory
+slurmstepd: error: execve(): /gpfs/home1/gsavchenko/bench_2/cloud_noise/./run.sh: No such file or directory
+slurmstepd: error: execve(): /gpfs/home1/gsavchenko/bench_2/cloud_noise/./run.sh: No such file or directory
+slurmstepd: error: execve(): /gpfs/home1/gsavchenko/bench_2/cloud_noise/./run.sh: No such file or directory
+slurmstepd: error: execve(): /gpfs/home1/gsavchenko/bench_2/cloud_noise/./run.sh: No such file or directory
+slurmstepd: error: execve(): /gpfs/home1/gsavchenko/bench_2/cloud_noise/./run.sh: No such file or directory
+slurmstepd: error: execve(): /gpfs/home1/gsavchenko/bench_2/cloud_noise/./run.sh: No such file or directory
+slurmstepd: error: execve(): /gpfs/home1/gsavchenko/bench_2/cloud_noise/./run.sh: No such file or directory
+slurmstepd: error: execve(): /gpfs/home1/gsavchenko/bench_2/cloud_noise/./run.sh: No such file or directory
+slurmstepd: error: execve(): /gpfs/home1/gsavchenko/bench_2/cloud_noise/./run.sh: No such file or directory
+slurmstepd: error: execve(): /gpfs/home1/gsavchenko/bench_2/cloud_noise/./run.sh: No such file or directory
+slurmstepd: error: execve(): /gpfs/home1/gsavchenko/bench_2/cloud_noise/./run.sh: No such file or directory
+slurmstepd: error: execve(): /gpfs/home1/gsavchenko/bench_2/cloud_noise/./run.sh: No such file or directory
+slurmstepd: error: execve(): /gpfs/home1/gsavchenko/bench_2/cloud_noise/./run.sh: No such file or directory
+slurmstepd: error: execve(): /gpfs/home1/gsavchenko/bench_2/cloud_noise/./run.sh: No such file or directory
+slurmstepd: error: execve(): /gpfs/home1/gsavchenko/bench_2/cloud_noise/./run.sh: No such file or directory
+slurmstepd: error: execve(): /gpfs/home1/gsavchenko/bench_2/cloud_noise/./run.sh: No such file or directory
+slurmstepd: error: execve(): /gpfs/home1/gsavchenko/bench_2/cloud_noise/./run.sh: No such file or directory
+slurmstepd: error: execve(): /gpfs/home1/gsavchenko/bench_2/cloud_noise/./run.sh: No such file or directory
+slurmstepd: error: execve(): /gpfs/home1/gsavchenko/bench_2/cloud_noise/./run.sh: No such file or directory
+slurmstepd: error: execve(): /gpfs/home1/gsavchenko/bench_2/cloud_noise/./run.sh: No such file or directory
+slurmstepd: error: execve(): /gpfs/home1/gsavchenko/bench_2/cloud_noise/./run.sh: No such file or directory
+slurmstepd: error: execve(): /gpfs/home1/gsavchenko/bench_2/cloud_noise/./run.sh: No such file or directory
+slurmstepd: error: execve(): /gpfs/home1/gsavchenko/bench_2/cloud_noise/./run.sh: No such file or directory
+slurmstepd: error: execve(): /gpfs/home1/gsavchenko/bench_2/cloud_noise/./run.sh: No such file or directory
+srun: error: tcn585: tasks 16-31: Exited with exit code 2
+srun: Terminating StepId=5579181.0
+slurmstepd: error: *** STEP 5579181.0 ON tcn584 CANCELLED AT 2024-03-17T20:59:53 ***
+srun: error: tcn584: tasks 0-15: Exited with exit code 2

@@ -29,38 +29,50 @@ sns.set_style("whitegrid")
 
 plot_ci = "sd"
 
-providers = ["AWS", "Azure", "GCP", "Oracle", "Alps", "Daint", "DEEP-EST"]
-instances = ["Normal", "HPC", "HPC (Metal)", "HPC (200 Gb/s)"]
+providers = ["snellius", "snellius-long-rome", "snellius-long-genoa", "snellius-short-genoa"]
+instances = ["HPC"]
 placements = ["Same Rack", "Different Racks"]
 times = ["Night", "Day"]
 
 # Optimal stuff
 instance_type_t = {}
-instance_type_t["GCP"] = "HPC"
-instance_type_t["AWS"] = "HPC (Metal)"
-instance_type_t["Azure"] = "HPC"
-instance_type_t["Oracle"] = "HPC (Metal)"
-instance_type_t["Daint"] = "HPC (Metal)"
-instance_type_t["Alps"] = "HPC (Metal)"
-instance_type_t["DEEP-EST"] = "HPC (Metal)"
+# instance_type_t["GCP"] = "HPC"
+# instance_type_t["AWS"] = "HPC (Metal)"
+# instance_type_t["Azure"] = "HPC"
+# instance_type_t["Oracle"] = "HPC (Metal)"
+# instance_type_t["Daint"] = "HPC (Metal)"
+# instance_type_t["Alps"] = "HPC (Metal)"
+# instance_type_t["DEEP-EST"] = "HPC (Metal)"
+instance_type_t["snellius"] = "HPC"
+instance_type_t["snellius-long-rome"] = "HPC"
+instance_type_t["snellius-long-genoa"] = "HPC"
+instance_type_t["snellius-short-genoa"] = "HPC"
 
 placement_t = {}
-placement_t["GCP"] = "Same Rack"
-placement_t["AWS"] = "Same Rack"
-placement_t["Azure"] = "Same Rack"
-placement_t["Oracle"] = "Same Rack"
-placement_t["Daint"] = "Same Rack"
-placement_t["Alps"] = "Same Rack"
-placement_t["DEEP-EST"] = "Same Rack"
+# placement_t["GCP"] = "Same Rack"
+# placement_t["AWS"] = "Same Rack"
+# placement_t["Azure"] = "Same Rack"
+# placement_t["Oracle"] = "Same Rack"
+# placement_t["Daint"] = "Same Rack"
+# placement_t["Alps"] = "Same Rack"
+# placement_t["DEEP-EST"] = "Same Rack"
+placement_t["snellius"] = "Same Rack"
+placement_t["snellius-long-rome"] = "Same Rack"
+placement_t["snellius-long-genoa"] = "Same Rack"
+placement_t["snellius-short-genoa"] = "Same Rack"
 
 time_t = {}
-time_t["GCP"] = "Day"
-time_t["AWS"] = "Day"
-time_t["Azure"] = "Day"
-time_t["Oracle"] = "Day"
-time_t["Daint"] = "Day"
-time_t["Alps"] = "Day"
-time_t["DEEP-EST"] = "Day"
+# time_t["GCP"] = "Day"
+# time_t["AWS"] = "Day"
+# time_t["Azure"] = "Day"
+# time_t["Oracle"] = "Day"
+# time_t["Daint"] = "Day"
+# time_t["Alps"] = "Day"
+# time_t["DEEP-EST"] = "Day"
+time_t["snellius"] = "Day"
+time_t["snellius-long-rome"] = "Day"
+time_t["snellius-long-genoa"] = "Day"
+time_t["snellius-short-genoa"] = "Day"
 
 
 metric_human = {}
@@ -96,6 +108,14 @@ def fname(name):
         return "hpc"
     elif name =="HPC (200 Gb/s)":
         return "hpc200"
+    elif name =="snellius":
+        return "snellius"
+    elif name == "snellius-long-genoa":
+        return "snellius-long-genoa"
+    elif name == "snellius-long-rome":
+        return "snellius-long-rome"
+    elif name == "snellius-short-genoa":
+        return "snellius-short-genoa"
     elif name == "Same Rack":
         return "same_rack"
     elif name == "Different Racks":
@@ -181,9 +201,17 @@ def get_data(provider, instance, placement, timestr, data_type):
         filename = "ng_osnoise.out"
     else:
         sys.exit("Unknown data type " + data_type)
+    print("Loading " + filename + " ...")
+    print("Paths are ", paths)
+    print("Provider is ", provider)
+    print("Instance is ", instance)
+    print("Placement is ", placement)
+    print("Timestr is ", timestr)
     if (provider, instance, placement, timestr) not in paths:
+        print("Path not found: " + provider + " " + instance + " " + placement + " " + timestr)
         return None
     full_filename = paths[(provider, instance, placement, timestr)] + "/" + filename
+    print("full path is ", full_filename)
     if not os.path.exists(full_filename):
         return None
     col_names = ["Message Size", "RTT/2 (us)"]
@@ -304,12 +332,14 @@ def plot_noise_long(data_type, data_type_human):
     fig, axes = plt.subplots(1, 1, figsize=(10,5))
     df = pd.DataFrame()
     x_col = ""
+    print(data_type)
     for provider in providers:
         if data_type == "os_noise":
             df_tmp = get_data(provider, instance_type_t[provider], "Same Rack", "Day", data_type)
+            print("YOUR DF_TMP: ", df_tmp)
             x_col = "Time (s)"
         else:
-            df_tmp = get_data(provider, instance_type_t[provider], "Same Rack", "Long", data_type)
+            df_tmp = get_data(provider, instance_type_t[provider], "Different Racks", "Day", data_type)
             x_col = "Sample"
         df = pd.concat([df, df_tmp])
     df.reset_index(inplace=True, drop=True)             
@@ -523,7 +553,7 @@ def plot_paper_striping(stripe_or_conc="stripe"):
         i = 0
         handles = None
         labels = None
-        for provider in ["AWS", "GCP"]:
+        for provider in ["snellius","snellius-long-rome", "snellius-long-genoa", "snellius-short-genoa"]:
             # Get data
             df = pd.DataFrame()
             for conc in [1, 2, 4, 8, 16]:
@@ -949,7 +979,7 @@ def plot_noise_net_alltime(lat_or_bw, plot_type):
             lat_or_bw_long = "Bandwidth (Gb/s)"
 
         #for provider in providers:    
-        for provider in ["AWS", "Azure", "Daint"]:    
+        for provider in ["snellius","snellius-long-rome", "snellius-long-genoa", "snellius-short-genoa"]:    
             # Create sub frames
             df = load_all(lat_or_bw)
             df = filter_provider(df, provider)
@@ -1003,6 +1033,11 @@ def plot_paper_uni_vs_bi():
         stripes["Daint"] = 1
         stripes["Alps"] = 1
         stripes["DEEP-EST"] = 1
+        stripes["snellius"] = 1
+        stripes["snellius-long-rome"] = 1
+        stripes["snellius-long-genoa"] = 1
+        stripes["snellius-short-genoa"] = 1
+
 
         opt_msg_size_uni = {}
         opt_msg_size_uni["GCP"] = "16MiB"
@@ -1012,6 +1047,10 @@ def plot_paper_uni_vs_bi():
         opt_msg_size_uni["Daint"] = "16MiB"
         opt_msg_size_uni["Alps"] = "16MiB"
         opt_msg_size_uni["DEEP-EST"] = "16MiB"
+        opt_msg_size_uni["snellius"] = "16MiB"
+        opt_msg_size_uni["snellius-long-rome"] = "16MiB"
+        opt_msg_size_uni["snellius-long-genoa"] = "16MiB"
+        opt_msg_size_uni["snellius-short-genoa"] = "16MiB"
         
         opt_msg_size_bi = {}
         opt_msg_size_bi["GCP"] = "16MiB"
@@ -1021,6 +1060,10 @@ def plot_paper_uni_vs_bi():
         opt_msg_size_bi["Daint"] = "16MiB"        
         opt_msg_size_bi["Alps"] = "16MiB"        
         opt_msg_size_bi["DEEP-EST"] = "16MiB"    
+        opt_msg_size_bi["snellius"] = "16MiB"
+        opt_msg_size_bi["snellius-long-rome"] = "16MiB"
+        opt_msg_size_bi["snellius-long-genoa"] = "16MiB"
+        opt_msg_size_bi["snellius-short-genoa"] = "16MiB"
 
         for provider in providers:
             # Get data 
@@ -1053,6 +1096,7 @@ def plot_paper_uni_vs_bi():
 
 def get_noise_single(provider, instance_type, placement, time, data_type, ax, j, kde):
     df_tmp = get_data(provider, instance_type, placement, time, data_type)
+    print("Plotting ", df_tmp)
     if df_tmp is not None:
         df_tmp["Time (min)"] = (df_tmp["Sample"] / len(df_tmp)) * 60.0 # * 1e9                
         if kde:
@@ -1145,7 +1189,7 @@ def plot_paper_noise_long_instance_type(data_type, data_type_human):
     i = 0
     providers_iterate = providers
     if not "os" in data_type:
-        providers_iterate = ["AWS", "Azure", "GCP", "Oracle"]
+        providers_iterate = ["snellius","snellius-long-rome", "snellius-long-genoa", "snellius-short-genoa"]
     for provider in providers_iterate:
         df = pd.DataFrame()
         j = 0
@@ -1213,7 +1257,7 @@ def plot_paper_noise_long_time_alloc(data_type, data_type_human):
     i = 0
     palette_dict = {}
     legend_elements = []
-    markers = {"GCP" : 'o', "AWS" : 'D', "Daint" : 's', "Azure" : '^', "Alps" : "P", "DEEP-EST" : 'X', "Oracle" : 'p'}
+    markers = {"snellius" : 'D', "snellius-long-rome" : 's', "snellius-long-genoa" : '^', "snellius-short-genoa" : 'o'}
     for provider in providers:
         palette_dict[provider] = sns.color_palette()[i]    
         legend_elements += [Line2D([0], [0], marker=markers[provider], lw=0, color=sns.color_palette()[i], label=provider)]
@@ -1226,7 +1270,7 @@ def plot_paper_noise_long_time_alloc(data_type, data_type_human):
             #ax = axes[int(i / cols)][i % cols]
             ax = axes[i]
             ax.set_title(placement)
-            for provider in [ "GCP", "AWS", "Daint", "DEEP-EST", "Azure", "Alps", "Oracle"]:
+            for provider in ["snellius","snellius-long-rome", "snellius-long-genoa", "snellius-short-genoa"]:
                 df_tmp = get_noise_single(provider, instance_type_t[provider], placement, time, data_type, ax, j, kde)
                 if df_tmp is not None:
                     df = pd.concat([df, df_tmp])
@@ -1329,15 +1373,17 @@ def main():
     with open("../data/description.csv", mode='r') as infile:
         reader = csv.reader(infile)    
         global paths
-        paths = {(rows[0],rows[1],rows[2],rows[3]):"../data/" + rows[4] for rows in reader}
+        paths = {(rows[0],rows[1],rows[2],rows[3]):"" + rows[4] for rows in reader if len(rows) >= 5}
+        print("your path $$$$$$")
+        print(paths)
 
     if args.full:
-        plot_noise("noise_lat", "Latency (us)")
-        plot_noise("noise_bw", "Bandwidth (Gb/s)")
-        plot_noise("os_noise", "Detour (us)")
-        plot_noise_long("noise_lat", "Latency (us)")
-        plot_noise_long("noise_bw", "Bandwidth (Gb/s)")    
-        plot_noise_long("os_noise", "Detour (us)")    
+        # plot_noise("noise_lat", "Latency (us)")
+        # plot_noise("noise_bw", "Bandwidth (Gb/s)")
+        # plot_noise("os_noise", "Detour (us)")
+        # plot_noise_long("noise_lat", "Latency (us)")
+        # plot_noise_long("noise_bw", "Bandwidth (Gb/s)")    
+        # plot_noise_long("os_noise", "Detour (us)")    
 
         for metric in ["unidirectional_lat", "unidirectional_bw", "bidirectional_lat", "bidirectional_bw"]:
             plot_lat_bw(metric, metric_human[metric], "any", "any")
@@ -1359,8 +1405,10 @@ def main():
                     #plot_lat_bw_sw("unidirectional_lat", "RTT/2 (us)", time, placement, instance_type)
                     #plot_lat_bw_sw("unidirectional_bw", "Bandwidth (Gb/s)", time, placement, instance_type)                
     else:
-        #plot_noise_long("noise_lat", "Latency (us)")
-        #plot_noise_long("noise_bw", "Bandwidth (Gb/s)")            
+        print("noise_lat")
+        # plot_noise_long("noise_lat", "Latency (us)")
+        # plot_paper_lat_bw()
+        # plot_noise_long("noise_bw", "Bandwidth (Gb/s)")            
         #for bol in ["noise_bw", "noise_lat"]:
         #    plot_noise_net_alltime(bol, "violin")
         #    #plot_noise_net_alltime(bol, "box")        
