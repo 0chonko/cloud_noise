@@ -21,28 +21,31 @@ times = ["Night", "Day"]
 
 # Optimal stuff
 instance_type_t = {}
-instance_type_t["GCP"] = "HPC"
-instance_type_t["AWS"] = "HPC (Metal)"
-instance_type_t["Azure"] = "HPC"
-instance_type_t["Daint"] = "HPC (Metal)"
-instance_type_t["Alps"] = "HPC (Metal)"
-instance_type_t["DEEP-EST"] = "HPC (Metal)"
+# instance_type_t["GCP"] = "HPC"
+# instance_type_t["AWS"] = "HPC (Metal)"
+# instance_type_t["Azure"] = "HPC"
+# instance_type_t["Daint"] = "HPC (Metal)"
+# instance_type_t["Alps"] = "HPC (Metal)"
+# instance_type_t["DEEP-EST"] = "HPC (Metal)"
+instance_type_t["snellius"] = "HPC (Metal)"
 
 placement_t = {}
-placement_t["GCP"] = "Same Rack"
-placement_t["AWS"] = "Same Rack"
-placement_t["Azure"] = "Same Rack"
-placement_t["Daint"] = "Same Rack"
-placement_t["Alps"] = "Same Rack"
-placement_t["DEEP-EST"] = "Same Rack"
+# placement_t["GCP"] = "Same Rack"
+# placement_t["AWS"] = "Same Rack"
+# placement_t["Azure"] = "Same Rack"
+# placement_t["Daint"] = "Same Rack"
+# placement_t["Alps"] = "Same Rack"
+# placement_t["DEEP-EST"] = "Same Rack"
+placement_t["snellius"] = "Same Rack"
 
 time_t = {}
-time_t["GCP"] = "Day"
-time_t["AWS"] = "Day"
-time_t["Azure"] = "Day"
-time_t["Daint"] = "Day"
-time_t["Alps"] = "Day"
-time_t["DEEP-EST"] = "Day"
+# time_t["GCP"] = "Day"
+# time_t["AWS"] = "Day"
+# time_t["Azure"] = "Day"
+# time_t["Daint"] = "Day"
+# time_t["Alps"] = "Day"
+# time_t["DEEP-EST"] = "Day"
+time_t["snellius"] = "Day"
 
 
 metric_human = {}
@@ -68,6 +71,8 @@ def fname(name):
         return "alps"
     elif name == "DEEP-EST":
         return "deep-est"
+    elif name == "snellius":
+        return "snellius"
     elif name == "HPC (Metal)":
         return "hpc_metal"
     elif name == "Normal":
@@ -209,15 +214,17 @@ def get_data(provider, instance, placement, timestr, data_type):
 
 def load_all(data_type):
     df = pd.DataFrame()
-    for provider in providers:
-        for instance in instances:
-            for placement in placements:
-                for time in times:
-                    if (provider, instance, placement, time) not in paths:                        
-                        continue
-                    df_tmp = get_data(provider, instance, placement, time, data_type)
-                    df = pd.concat([df, df_tmp])
-    df.reset_index(inplace=True, drop=True)             
+    provider = "snellius"  # Focus only on Snellius
+    instance = instance_type_t[provider]
+    placement = placement_t[provider]
+    time = time_t[provider]
+
+    if (provider, instance, placement, time) not in paths:
+        return None  # Skip if path is not configured
+
+    df_tmp = get_data(provider, instance, placement, time, data_type)
+    df = pd.concat([df, df_tmp])
+    df.reset_index(inplace=True, drop=True)
     return df
 
 #  providers = ["AWS", "Azure", "GCP", "Oracle", "Alps", "Daint", "DEEP-EST"]
@@ -242,40 +249,34 @@ def get_instances_from_provider(provider):
     return instances
 
 def get_table(metric):
-    for placement in ["Same Rack", "Different Racks"]:
-        for row in ["Min Latency", "Mean Latency", "Max Bandwidth", "Mean Bandwidth"]:
-            print(row, end=" & ")
-            for provider in providers:
-                if "Latency" in row:
-                    if provider == "GCP":
-                        message_size = "16B" # Lower latency for 16B
-                    else:
-                        message_size = "1B"
-                else:
-                    message_size = "16MiB"
-                suffix = "x1"
-                if (provider == "GCP" or provider == "AWS") and not "Latency" in row:
-                    suffix = "y16"
-                    
-                instances = get_instances_from_provider(provider)
-                for instance in instances:
-                    dfc = load_all(metric + suffix)           
-                    dfc = filter_instance(dfc, instance)            
-                    dfc = filter_placement(dfc, placement)            
-                    dfc = filter_time(dfc, "Day")
-                    dfc = filter_provider(dfc, provider)
-                    dfc = dfc[dfc['Message Size'] == message_size]
-                    #print(dfc)
-                    if "Mean Latency" in row:
-                        print("{:.2f}".format(np.mean(dfc["RTT/2 (us)"])), end=" & ")
-                    elif "Min Latency" in row:
-                        print("{:.2f}".format(np.min(dfc["RTT/2 (us)"])), end=" & ")
-                    elif "Mean Bandwidth" in row:
-                        print("{:.2f}".format(np.mean(dfc["Bandwidth (Gb/s)"])), end=" & ")
-                    elif "Max Bandwidth" in row:
-                        print("{:.2f}".format(np.max(dfc["Bandwidth (Gb/s)"])), end=" & ")
-                
-            print("")
+    placement = placement_t["snellius"]
+    instance = instance_type_t["snellius"]
+
+    for row in ["Min Latency", "Mean Latency", "Max Bandwidth", "Mean Bandwidth"]:
+        print(row, end=" & ")
+
+        if "Latency" in row:
+            message_size = "1B"  # Lower latency for small messages
+        else:
+            message_size = "16MiB"
+
+        suffix = "x1"  # Adapt the suffix if needed
+
+        dfc = load_all(metric + suffix)
+        dfc = filter_instance(dfc, instance)
+        dfc = filter_placement(dfc, placement)
+        dfc = filter_time(dfc, "Day")
+        dfc = dfc[dfc['Message Size'] == message_size]
+
+        if "Mean Latency" in row:
+            print("{:.2f}".format(np.mean(dfc["RTT/2 (us)"])), end=" \n")
+        elif "Min Latency" in row:
+            print("{:.2f}".format(np.min(dfc["RTT/2 (us)"])), end=" \n")
+        elif "Mean Bandwidth" in row:
+            print("{:.2f}".format(np.mean(dfc["Bandwidth (Gb/s)"])), end=" \n")
+        elif "Max Bandwidth" in row:
+            print("{:.2f}".format(np.max(dfc["Bandwidth (Gb/s)"])), end=" \n")
+
 
 
 def main():     

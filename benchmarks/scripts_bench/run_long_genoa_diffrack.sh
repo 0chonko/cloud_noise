@@ -7,5 +7,5 @@
 #SBATCH --exclusive
 #SBATCH --nodelist=tcn[627,927]
 
-srun -N 2 --ntasks-per-node 16 --exclusive -t 26:00:00 run.sh -l -k "Snellius-long-genoa, HPC, Different Racks, Day" &
+./run.sh -l -k "Snellius-long-genoa, HPC, Different Racks, Day" &
 wait

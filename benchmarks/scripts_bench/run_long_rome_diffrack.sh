@@ -6,7 +6,7 @@
 #SBATCH --partition=rome
 #SBATCH --time=26:00:00
 #SBATCH --exclusive
-#SBATCH --nodelist=tcn[63,499]
+#SBATCH --nodelist=tcn[281,430]
 
-srun -N 2 --ntasks-per-node 16 --exclusive -t 26:00:00 run.sh -l -k "Snellius-long-rome, HPC, Different Racks, Day" &
+./run.sh -l -k "Snellius-long-rome, HPC, Different Racks, Day" &
 wait

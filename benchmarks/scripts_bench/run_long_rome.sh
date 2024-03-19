@@ -8,5 +8,5 @@
 #SBATCH --exclusive
 
 
-srun -N 2 --ntasks-per-node 16 --exclusive -t 26:00:00 run.sh -l -k "Snellius-long-rome, HPC, Same Rack, Day" &
+./run.sh -l -k "Snellius-long-rome, HPC, Same Rack, Day" &
 wait

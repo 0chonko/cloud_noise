@@ -18,8 +18,8 @@ mv out/paper_pre/noise_bw_time_alloc_long.pdf out/paper/fig12.pdf
 mv out/paper_pre/noise_bw_instance_type_long.pdf out/paper/fig13.pdf
 
 # Generate plots from simulation data
-./plot_sim.py
-mv out/simulations/validation_relative.pdf out/paper/fig14.pdf
-mv out/simulations/scalability_nwaydissemination_16.pdf out/paper/fig15.pdf
-mv out/simulations/scalability_pipelinedring_536870912.pdf out/paper/fig16.pdf
-mv out/simulations/cost_on-demand_nwaydissemination_128_new.pdf out/paper/fig17.pdf
+# ./plot_sim.py
+# mv out/simulations/validation_relative.pdf out/paper/fig14.pdf
+# mv out/simulations/scalability_nwaydissemination_16.pdf out/paper/fig15.pdf
+# mv out/simulations/scalability_pipelinedring_536870912.pdf out/paper/fig16.pdf
+# mv out/simulations/cost_on-demand_nwaydissemination_128_new.pdf out/paper/fig17.pdf
