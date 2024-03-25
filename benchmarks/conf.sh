@@ -37,6 +37,27 @@ case $SYSTEM in
   deep-est)
     source conf/deep-est.sh
     ;;
+  
+  snellius)
+    source conf/snellius.sh
+    ;;
+  
+  snellius-short-rome)
+    source conf/snellius.sh
+    ;;
+
+  snellius-long-rome)
+    source conf/snellius.sh
+    ;;
+  
+  snellius-short-genoa)
+    source conf/snellius.sh
+    ;;
+
+  snellius-long-genoa)
+    source conf/snellius.sh
+    ;;
+
 
   *)
     echo -n "Unknown SYSTEM "$SYSTEM
