@@ -1,6 +1,8 @@
 *.lo
 *.o
 *.la
+data/*
+data_/*
 benchmarks/netgauge/.deps/
 benchmarks/netgauge/Makefile
 benchmarks/netgauge/config.h

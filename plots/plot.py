@@ -29,50 +29,55 @@ sns.set_style("whitegrid")
 
 plot_ci = "sd"
 
-# providers = ["snellius-short-rome", "snellius-long-rome", "snellius-long-genoa", "snellius-short-genoa"]
-providers = ["snellius-long-rome", "snellius-long-genoa"]
+# providers = ["snellius-short-rome", "snellius-short-genoa","AWS", "Azure", "GCP", "Oracle", "Alps", "Daint", "DEEP-EST"]
+providers = ["snellius-short-rome", "snellius-short-genoa","AWS", "Oracle", "Alps"]
+
+# providers = ["snellius-short-rome", "snellius-short-genoa"]
 EXPERIMENT_LENGTH = "long"
-instances = ["HPC"]
+instances = ["HPC", "HPC (Metal)", "HPC (200 Gb/s)"]
 placements = ["Same Rack", "Different Racks"]
 
 times = ["Night", "Day"]
-MINUTES_LENGTH = 1440
+MINUTES_LENGTH = 60
+ROWS=3
+COLS=3
+TESTING_DATA_SHRINK = True
 
 # Optimal stuff
 instance_type_t = {}
-# instance_type_t["GCP"] = "HPC"
-# instance_type_t["AWS"] = "HPC (Metal)"
-# instance_type_t["Azure"] = "HPC"
-# instance_type_t["Oracle"] = "HPC (Metal)"
-# instance_type_t["Daint"] = "HPC (Metal)"
-# instance_type_t["Alps"] = "HPC (Metal)"
-# instance_type_t["DEEP-EST"] = "HPC (Metal)"
+instance_type_t["GCP"] = "HPC"
+instance_type_t["AWS"] = "HPC (Metal)"
+instance_type_t["Azure"] = "HPC"
+instance_type_t["Oracle"] = "HPC (Metal)"
+instance_type_t["Daint"] = "HPC (Metal)"
+instance_type_t["Alps"] = "HPC (Metal)"
+instance_type_t["DEEP-EST"] = "HPC (Metal)"
 instance_type_t["snellius-short-rome"] = "HPC"
 instance_type_t["snellius-long-rome"] = "HPC"
-instance_type_t["snellius-long-genoa"] = "HPC"
-instance_type_t["snellius-short-genoa"] = "HPC"
+instance_type_t["snellius-long-genoa"] = "HPC (200 Gb/s)"
+instance_type_t["snellius-short-genoa"] = "HPC (200 Gb/s)"
 
 placement_t = {}
-# placement_t["GCP"] = "Same Rack"
-# placement_t["AWS"] = "Same Rack"
-# placement_t["Azure"] = "Same Rack"
-# placement_t["Oracle"] = "Same Rack"
-# placement_t["Daint"] = "Same Rack"
-# placement_t["Alps"] = "Same Rack"
-# placement_t["DEEP-EST"] = "Same Rack"
+placement_t["GCP"] = "Same Rack"
+placement_t["AWS"] = "Same Rack"
+placement_t["Azure"] = "Same Rack"
+placement_t["Oracle"] = "Same Rack"
+placement_t["Daint"] = "Same Rack"
+placement_t["Alps"] = "Same Rack"
+placement_t["DEEP-EST"] = "Same Rack"
 placement_t["snellius-short-rome"] = "Same Rack"
 placement_t["snellius-long-rome"] = "Same Rack"
 placement_t["snellius-long-genoa"] = "Same Rack"
 placement_t["snellius-short-genoa"] = "Same Rack"
 
 time_t = {}
-# time_t["GCP"] = "Day"
-# time_t["AWS"] = "Day"
-# time_t["Azure"] = "Day"
-# time_t["Oracle"] = "Day"
-# time_t["Daint"] = "Day"
-# time_t["Alps"] = "Day"
-# time_t["DEEP-EST"] = "Day"
+time_t["GCP"] = "Day"
+time_t["AWS"] = "Day"
+time_t["Azure"] = "Day"
+time_t["Oracle"] = "Day"
+time_t["Daint"] = "Day"
+time_t["Alps"] = "Day"
+time_t["DEEP-EST"] = "Day"
 time_t["snellius-short-rome"] = "Day"
 time_t["snellius-long-rome"] = "Day"
 time_t["snellius-long-genoa"] = "Day"
@@ -222,7 +227,8 @@ def get_data(provider, instance, placement, timestr, data_type):
     if data_type == "os_noise":
         col_names = ["Time (s)", "Detour (us)"]
     df = pd.read_csv(full_filename, comment="#", sep="\t", names=col_names) 
-    if timestr == "Long" and data_type != "os_noise":
+    if "long" in provider and data_type != "os_noise":
+        print("Long run")
         #drop_perc = 0.99
         #drop_indices = np.random.choice(df.index, int(len(df)*drop_perc), replace=False)
         #df = df.drop(drop_indices)
@@ -240,6 +246,10 @@ def get_data(provider, instance, placement, timestr, data_type):
             minutes_after_midnight = minutes_after_midnight_et
         df.reset_index(inplace=True)
         df = df.reindex(np.roll(df.index, -minutes_after_midnight))
+
+    if TESTING_DATA_SHRINK:
+        bin_size = (len(df) / 1440) # One sample per minute
+        df = df.groupby(df.index // bin_size).mean()
 
     df["Provider"] = provider
     df["Instance"] = instance
@@ -309,22 +319,22 @@ def plot_noise(data_type, data_type_human, showfliers=False):
     ###########
     # Latency #
     ###########
-    fig, axes = plt.subplots(2, 2, figsize=(10,5), sharex=False, sharey=True)
-    plot_noise_single(df_same_rack_day, axes[0][0], data_type, data_type_human, "Instance", plottype, showfliers)
-    axes[0][0].set_title("Same Rack - Day")
-    axes[0][0].set_xlabel("")
+    fig, axes = plt.subplots(1, 2, figsize=(20,5), sharex=False, sharey=True)
+    plot_noise_single(df_same_rack_day, axes[0], data_type, data_type_human, "Instance", plottype, showfliers)
+    axes[0].set_title("Same Rack - Day")
+    axes[0].set_xlabel("")
 
-    plot_noise_single(df_different_rack_day, axes[0][1], data_type, data_type_human, "Instance", plottype, showfliers)
-    axes[0][1].set_title("Different Racks - Day")
-    axes[0][1].set_xlabel("")
+    plot_noise_single(df_different_rack_day, axes[1], data_type, data_type_human, "Instance", plottype, showfliers)
+    axes[1].set_title("Different Racks - Day")
+    axes[1].set_xlabel("")
 
-    plot_noise_single(df_same_rack_night, axes[1][0], data_type, data_type_human, "Instance", plottype, showfliers)
-    axes[1][0].set_title("Same Rack - Night")
-    axes[1][0].set_xlabel("")
+    # plot_noise_single(df_same_rack_night, axes[1][0], data_type, data_type_human, "Instance", plottype, showfliers)
+    # axes[1][0].set_title("Same Rack - Night")
+    # axes[1][0].set_xlabel("")
 
-    plot_noise_single(df_different_rack_night, axes[1][1], data_type, data_type_human, "Instance", plottype, showfliers)
-    axes[1][1].set_title("Different Racks - Night")    
-    axes[1][1].set_xlabel("")
+    # plot_noise_single(df_different_rack_night, axes[1][1], data_type, data_type_human, "Instance", plottype, showfliers)
+    # axes[1][1].set_title("Different Racks - Night")    
+    # axes[1][1].set_xlabel("")
 
     plt.tight_layout()
     fig.savefig(filename, format='pdf', dpi=100)
@@ -338,19 +348,21 @@ def plot_noise_long(data_type, data_type_human):
     x_col = ""
     print(data_type)
     for provider in providers:
-        if data_type == "os_noise":
-            df_tmp = get_data(provider, instance_type_t[provider], "Same Rack", "Day", data_type)
-            print("YOUR DF_TMP: ", df_tmp)
-            x_col = "Time (s)"
-        else:
-            df_tmp = get_data(provider, instance_type_t[provider], "Different Racks", "Day", data_type)
-            x_col = "Sample"
-        df = pd.concat([df, df_tmp])
+        for placement in placements:
+            if data_type == "os_noise":
+                df_tmp = get_data(provider, instance_type_t[provider], "Same Rack", "Day", data_type)
+                print("YOUR DF_TMP: ", df_tmp)
+                x_col = "Time (s)"
+            else:
+                df_tmp = get_data(provider, instance_type_t[provider], placement, "Day", data_type)
+                x_col = "Sample"
+            df = pd.concat([df, df_tmp])
     df.reset_index(inplace=True, drop=True)             
     df["Latency (us)"] = df["RTT/2 (us)"]
-    ax = sns.scatterplot(data=df, x=x_col, y=data_type_human, hue="Provider", style="Provider")
+    df["Provider_Placement"] = df["Provider"] + "_" + df["Placement"]  # New line
+    ax = sns.scatterplot(data=df, x=x_col, y=data_type_human, hue="Provider_Placement", style="Provider_Placement", edgecolor=None)  # Modified line
     if "Latency" in data_type_human and data_type != "os_noise":
-        ax.set(ylim=(1, 30))
+        ax.set(ylim=(1, None))
     plt.tight_layout()
     ax.figure.savefig(filename, format='pdf', dpi=100)
     plt.clf()
@@ -367,7 +379,7 @@ def plot_size_vs_lat_bw(df, ax, data_type, data_type_human, style, provider, xli
         ax = sns.lineplot(data=df, x="Message Size", y=data_type_human, style=style, \
                       hue=style, markers=True, dashes=True, ci=plot_ci, sort=False, ax=ax)    
     #ax.legend(title=None, ncol=3)
-    ax.legend(ncol=3, fontsize=8, title_fontsize=8, title=style)
+    ax.legend(ncol=3, fontsize=5, title_fontsize=5, title=style)
     ax.xaxis.set_major_locator(ticker.MultipleLocator(tick_spacing))
     if xlim != None:
         ax.set(xlim=xlim) 
@@ -393,7 +405,7 @@ def plot_size_vs_lat_bw(df, ax, data_type, data_type_human, style, provider, xli
         axins.tick_params(axis='y', labelsize=innerfontsize)
         axins.set_xlabel("")
         axins.set_ylabel(innerpars_dt, fontsize=innerfontsize)
-        #ax.indicate_inset_zoom(axins, edgecolor="black")
+        ax.indicate_inset_zoom(axins)
 
     #if "lat" in data_type:
     #    ax.set_yscale("log")    
@@ -407,8 +419,8 @@ def plot_lat_bw(data_type, data_type_human, time, placement):
     # Each subplot has the x for the msg size, the y for the lat/bw, the hue for the instance type. Then 4 subplots (one for each provider)
     # We fix day/night and placement
     
-    rows = 2
-    cols = 2
+    rows = ROWS
+    cols = COLS
     fig, axes = plt.subplots(rows, cols, figsize=(10,5), sharex=False, sharey=True)
     i = 0    
     for provider in providers:
@@ -452,8 +464,8 @@ def plot_lat_bw_conc(data_type, data_type_human, time, placement, instance_type,
     # Each subplot has the x for the msg size, the y for the lat/bw, the hue for the concurrency level. Then 4 subplots (one for each provider)
     # We fix placement, day/night, and instance type
     
-    rows = 2
-    cols = 2
+    rows = ROWS
+    cols = COLS
     fig, axes = plt.subplots(rows, cols, figsize=(10,5), sharex=False, sharey=True)
     i = 0
     hue = ""
@@ -511,8 +523,8 @@ def plot_lat_bw_sw(data_type, data_type_human, time, placement, instance_type):
     # Each subplot has the x for the msg size, the y for the lat/bw, the hue for the sw stack. Then 4 subplots (one for each provider)
     # We fix placement, day/night, and instance type
 
-    rows = 2
-    cols = 2
+    rows = ROWS
+    cols = COLS
     fig, axes = plt.subplots(rows, cols, figsize=(10,5), sharex=False, sharey=True)
     i = 0
     for provider in providers:        
@@ -552,13 +564,13 @@ def plot_paper_striping(stripe_or_conc="stripe"):
     for metric in ["unidirectional_bw"]:
         filename = 'out/paper_pre/' + metric + '_' + stripe_or_conc + '.pdf'
         print("Plotting " + filename + " ...")
-        rows = 2
-        cols = 2
-        fig, axes = plt.subplots(rows, cols, figsize=(8, 5), sharex=False, sharey=True)
+        rows = ROWS  # Adjust the number of rows to match the size of the axes array
+        cols = COLS  # Adjust the number of columns to match the size of the axes array
+        fig, axes = plt.subplots(rows, cols, figsize=(12, 4), sharex=True, sharey=True)
         handles = None
         labels = None
         for i, provider in enumerate(providers):
-            for j, placement in enumerate(["Same Rack", "Different Racks"]):
+            for j, placement in enumerate(placements):
                 # Get data
                 df = pd.DataFrame()
                 for conc in [2, 4, 8, 16]:
@@ -592,15 +604,19 @@ def plot_paper_striping(stripe_or_conc="stripe"):
                     innerpars_dt = "RTT/2 (us)"
 
                 plot_size_vs_lat_bw(df, ax, metric, metric_human[metric], "Stripes", f"{provider} - {placement}", xlim=xlim, ylim=ylim, innerpars_dt=innerpars_dt, innerpars=innerpars, innerxlim=innerxlim, innerylim=innerylim)
-                ax.set_title(f"{provider} - {placement}")
+                ax.set_title(f"{provider} - {placement}", fontsize=6)
                 handles, labels = ax.get_legend_handles_labels()
                 ax.get_legend().remove()
+                ax.tick_params(axis='y', labelsize=4)  # Set y-axis label size
+                ax.tick_params(axis='x', labelsize=4)  # Set y-axis label size
+                
+
 
         if stripe_or_conc == "stripe":
             title = "Striping Factor"
         else:
             title = "Concurrent Communications"
-        fig.legend(handles, labels, bbox_to_anchor=(.72, 1.02), ncol=5, title=title, fontsize=8, title_fontsize=8)
+        fig.legend(handles, labels, bbox_to_anchor=(.72, 0.98), ncol=5, title=title, fontsize=4, title_fontsize=4)
         plt.tight_layout()
         plt.subplots_adjust(top=0.8)
         fig.savefig(filename, format='pdf', dpi=100)
@@ -615,8 +631,8 @@ def plot_paper_lat_bw():
     #   - Fixed time (Night), allocation (Same Rack), and instance types (HPC)
     filename = 'out/paper_pre/lat_bw.pdf'
     print("Plotting " + filename + " ...")
-    rows = 2
-    cols = 2
+    rows = ROWS
+    cols = COLS
     fig, axes = plt.subplots(rows, cols, figsize=(8,3), sharex=False, sharey=False)
     i = 0
     for metric in ["unidirectional_bw"]:        
@@ -671,7 +687,7 @@ def plot_paper_lat_bw():
         ax.get_legend().remove()
         i += 1
 
-    fig.legend(handles, labels, bbox_to_anchor=(.97, .95), ncol=7, fontsize=10, title_fontsize=10)
+    fig.legend(handles, labels, bbox_to_anchor=(.97, .95), ncol=7, fontsize=5, title_fontsize=5)
     plt.tight_layout()
     plt.subplots_adjust(top=0.8)
     fig.savefig(filename, format='pdf', dpi=100)
@@ -691,8 +707,8 @@ def plot_paper_lat_bw_instances(metric):
     ############################################
     ############################################
     ############################################
-    rows = 2
-    cols = 2
+    rows = ROWS
+    cols = COLS
 
 
     
@@ -701,6 +717,8 @@ def plot_paper_lat_bw_instances(metric):
     palette_dict = {}
     legend_elements = []
     markers = {"Normal" : 'o', "HPC" : 'D', "HPC (Metal)" : 's', "HPC (200 Gb/s)" : '^'}
+    # markers = {"GCP" : 'o', "AWS" : 'D', "Daint" : 's', "Azure" : '^', "Alps" : "P", "DEEP-EST" : 'X', "Oracle" : 'p', "snellius-short-rome" : 's', "snellius-short-genoa" : 's'}
+
     #dashes = {"Normal" : '-', "HPC" : '--', "HPC (Metal)" : '-.', "HPC (200 Gb/s)" : ':'}
     for instance in instances:
         palette_dict[instance] = sns.color_palette()[i]
@@ -780,7 +798,7 @@ def plot_paper_lat_bw_instances(metric):
         ax.get_legend().remove()
         i += 1
 
-    fig.legend(handles=legend_elements, bbox_to_anchor=(.82, 1), ncol=len(instances), fontsize=10, title_fontsize=10)
+    fig.legend(handles=legend_elements, bbox_to_anchor=(.82, 1), ncol=len(instances), fontsize=5, title_fontsize=5)
     plt.tight_layout()
     plt.subplots_adjust(top=0.88)
     fig.savefig(filename, format='pdf', dpi=100)
@@ -797,8 +815,8 @@ def plot_paper_bibw():
     #   - Fixed time (Night), allocation (Same Rack), and instance types (HPC)
     filename = 'out/paper_pre/bibw.pdf'
     print("Plotting " + filename + " ...")
-    rows = 2
-    cols = 2
+    rows = ROWS
+    cols = COLS
     fig, axes = plt.subplots(rows, cols, figsize=(5,2.5), sharex=False, sharey=False)
     i = 0
     for metric in ["bidirectional_bw"]:        
@@ -861,7 +879,7 @@ def plot_paper_bibw():
         ax.get_legend().remove()
         i += 1
 
-    fig.legend(handles, labels, bbox_to_anchor=(1, 1), ncol=6, fontsize=8, title_fontsize=8)
+    fig.legend(handles, labels, bbox_to_anchor=(1, 1), ncol=6, fontsize=5, title_fontsize=5)
     plt.tight_layout()
     plt.subplots_adjust(top=0.85)
     fig.savefig(filename, format='pdf', dpi=100)
@@ -878,7 +896,7 @@ def plot_paper_netnoise():
     filename = 'out/paper_pre/netnoise.pdf'
     print("Plotting " + filename + " ...")
     rows = 2
-    cols = 2
+    cols = 5
     fig, axes = plt.subplots(rows, cols, figsize=(10,2.5), sharex=False, sharey=False)
     i = 0
     
@@ -974,11 +992,11 @@ def plot_noise_net_alltime(lat_or_bw, plot_type):
     for (time_tmp, placement_tmp) in [("Day", "Same Rack"), ("Day", "Different Racks"), ("Night", "Same Rack"), ("Night", "Different Racks")]:
         if plot_type == "kde":
             rows = 2
-            cols = 2
+            cols = 5
             figsize = (10,5)
         else:
             rows = 2
-            cols = 2
+            cols = 5
             figsize = (5, 2.5)
         fig, axes = plt.subplots(rows, cols, figsize=figsize, sharex=True, sharey=True)
         i = 0
@@ -990,7 +1008,7 @@ def plot_noise_net_alltime(lat_or_bw, plot_type):
             lat_or_bw_long = "Bandwidth (Gb/s)"
 
         #for provider in providers:    
-        for provider in providers:    
+        for provider in ["AWS", "Azure", "Daint"]:    
             # Create sub frames
             df = load_all(lat_or_bw)
             df = filter_provider(df, provider)
@@ -1096,11 +1114,14 @@ def plot_paper_uni_vs_bi():
             df = pd.concat([df, dfc])
 
     df.reset_index(inplace=True, drop=True)           
-    fig, axes = plt.subplots(1, 1, figsize=(5, 2), sharex=True, sharey=True)
+    fig, axes = plt.subplots(1, 1, figsize=(8, 4), sharex=True, sharey=True)
     ax = sns.violinplot(data=df, x="Provider", y="Bandwidth (Gb/s)", hue="Type", saturation=1)    
     patch_violinplot(sns.color_palette(), df["Type"].nunique())
     ax.legend_.set_title(None)
     ax.set_xlabel(None)
+    ax.tick_params(axis='x', labelsize=5)
+    ax.tick_params(axis='y', labelsize=5)
+
     fig.tight_layout()
     fig.savefig(filename, format='pdf', dpi=100)
     plt.clf()
@@ -1165,26 +1186,23 @@ def plot_paper_noise_long_instance_type(data_type, data_type_human):
         filename = 'out/paper_pre/' + data_type + '_instance_type_long.pdf'
     print("Plotting " + filename + " ...")   
     if "os" in data_type: 
-        #rows = 3
-        #cols = 3
-        #fig, axes = plt.subplots(rows, cols, figsize=(8, 6), sharex=True, sharey=True)
-        fig = plt.figure(constrained_layout=True, figsize=(9,4))
-        gs0 = fig.add_gridspec(1, 1)
-
-        gs00 = gs0[0].subgridspec(1, 4)
-        # gs01 = gs0[1].subgridspec(1, 1)
-
-        for a in range(1):
-            for b in range(4):
-                fig.add_subplot(gs00[a, b])
-        # for a in range(1):
-        #     for b in range(3):
-        #         fig.add_subplot(gs01[a, b])
-        axes = fig.get_axes()
-    else:
-        rows = 2
-        cols = 2
-        fig, axes = plt.subplots(rows, cols, figsize=(8, 2.5), sharex=True, sharey=True)
+        fig = plt.figure(constrained_layout=True, figsize=(9,6))
+        gs0 = fig.add_gridspec(3, 3)  # Create a 3x3 grid layout for subplots
+        axes = []
+        for a in range(3):
+            for b in range(3):
+                ax = fig.add_subplot(gs0[a, b])  # Add subplots to the grid layout
+                ax.set_ylim(0, 1000)  # Set the same y-axis limits for all subplots
+                if a == 2:  # Add y-label title to the last row
+                    ax.set_ylabel(data_type_human)
+                    ax.set_ylim(0, 1000)
+                else:
+                    ax.set_ylabel("")  # Remove y-label for other rows
+                axes.append(ax)  # Append the axes to the list
+    # else:
+        # rows = 2
+        # cols = 5
+        # fig, axes = plt.subplots(rows, cols, figsize=(8, 2.5), sharex=True)  # Set sharex=True to make x-axis same for all subplots
     if "os" in data_type:
         x_col = "Time (s)"
     else:
@@ -1193,6 +1211,8 @@ def plot_paper_noise_long_instance_type(data_type, data_type_human):
     palette_dict = {}
     legend_elements = []
     markers = {"Normal" : 'o', "HPC" : 'D', "HPC (Metal)" : 's', "HPC (200 Gb/s)" : '^'}
+    # markers = {"GCP" : 'o', "AWS" : 'D', "Daint" : 's', "Azure" : '^', "Alps" : "P", "DEEP-EST" : 'X', "Oracle" : 'p', "snellius-short-rome" : 's', "snellius-short-genoa" : 's'}
+
     for instance in instances:
         palette_dict[instance] = sns.color_palette()[i]
         legend_elements += [Line2D([0], [0], marker=markers[instance], lw=0, color=sns.color_palette()[i], label=instance)]
@@ -1229,10 +1249,7 @@ def plot_paper_noise_long_instance_type(data_type, data_type_human):
                     ax.set(ylim=(1, 512))
             if data_type == "os_noise":                
                 ax.set_yscale("log")
-                ax.set(ylim=(10,1000), xlim=(0,5), xticks=[0,1,2,3,4,5], xticklabels=[0,1,2,3,4,5])
-                if i != 0 and i != 4:
-                    ax.set_ylabel(None)
-                    ax.set(yticklabels=[])
+                ax.set(ylim=(0,1000), xlim=(0,5))
             if "bw" in data_type:
                 ax.set(ylim=(0, 1))
             ax.get_legend().remove()
@@ -1258,9 +1275,9 @@ def plot_paper_noise_long_time_alloc(data_type, data_type_human):
     else:
         filename = 'out/paper_pre/' + data_type + '_time_alloc_long.pdf'    
     print("Plotting " + filename + " ...")    
-    rows = 2
-    cols = 2
-    fig, axes = plt.subplots(rows, cols, figsize=(8,2.5), sharex=True, sharey=True)
+    rows = ROWS
+    cols = COLS
+    fig, axes = plt.subplots(rows, cols, figsize=(8,3), sharex=True, sharey=True)
     if "os" in data_type:
         x_col = "Time (min)"
     else:
@@ -1268,7 +1285,7 @@ def plot_paper_noise_long_time_alloc(data_type, data_type_human):
     i = 0
     palette_dict = {}
     legend_elements = []
-    markers = {"snellius-short-genoa" : 'o', "snellius-long-genoa" : 'D', "snellius-long-rome" : 's', "snellius-short-rome" : '^'}
+    markers = {"GCP" : 'o', "AWS" : 'D', "Daint" : 's', "Azure" : '^', "Alps" : "P", "DEEP-EST" : 'X', "Oracle" : 'p', "snellius-short-rome" : 's', "snellius-short-genoa" : 's'}
     for provider in providers:
         palette_dict[provider] = sns.color_palette()[i]    
         legend_elements += [Line2D([0], [0], marker=markers[provider], lw=0, color=sns.color_palette()[i], label=provider)]
@@ -1281,7 +1298,7 @@ def plot_paper_noise_long_time_alloc(data_type, data_type_human):
             #ax = axes[int(i / cols)][i % cols]
             ax = axes[i]
             ax.set_title(placement)
-            for provider in providers:
+            for provider in [ "GCP", "AWS", "Daint", "DEEP-EST", "Azure", "Alps", "Oracle"]:
                 df_tmp = get_noise_single(provider, instance_type_t[provider], placement, time, data_type, ax, j, kde)
                 if df_tmp is not None:
                     df = pd.concat([df, df_tmp])
@@ -1300,7 +1317,7 @@ def plot_paper_noise_long_time_alloc(data_type, data_type_human):
                     ax.set(ylim=(1, 512))
             ax.get_legend().remove()
             i += 1
-    fig.legend(handles=legend_elements, bbox_to_anchor=(.98, 1), ncol=len(providers), title=None)
+    fig.legend(handles=legend_elements, bbox_to_anchor=(.98, 1), ncol=len(providers), title=None, fontsize=5)
     plt.tight_layout()
     plt.subplots_adjust(top=0.75)
     fig.savefig(filename, format='pdf', dpi=100)
@@ -1386,7 +1403,7 @@ def main():
         global paths
         paths = {(rows[0],rows[1],rows[2],rows[3]):"" + rows[4] for rows in reader if len(rows) >= 5}
         print("your path $$$$$$")
-        print(paths)
+        # print(paths)
 
     if args.full:
         # plot_noise("noise_lat", "Latency (us)")
@@ -1417,15 +1434,32 @@ def main():
                     plot_lat_bw_sw("unidirectional_bw", "Bandwidth (Gb/s)", time, placement, instance_type)                
     else:
         print("noise_lat")
-        # plot_noise_long("noise_lat", "Latency (us)")
+        plot_noise("noise_lat", "Latency (us)")
+        plot_noise("noise_bw", "Bandwidth (Gb/s)") # too long    
+        plot_paper_striping("stripe") # OK        
+        plot_paper_noise_long_instance_type("os_noise", "Detour (us)") # COOL   
+        plot_paper_lat_bw_instances("unidirectional_bw") # OK
+        plot_paper_noise_long_time_alloc("noise_lat", "Normalized Latency") # OK 
+
+    
+        # plot_paper_uni_vs_bi() #TODO
+
+
+        # plot_noise_long("os_noise", "Detour (us)")    
+
+
         # for longs
         # plot_paper_lat_bw() # NOPE
-        # plot_noise_long("noise_bw", "Bandwidth (Gb/s)") # too long       
-        #for bol in ["noise_bw", "noise_lat"]:
-        #    plot_noise_net_alltime(bol, "violin")
-        #    #plot_noise_net_alltime(bol, "box")        
-        # plot_paper_netnoise()                
+
+        # for bol in ["noise_bw", "noise_lat"]:
+        #     plot_noise_net_alltime(bol, "violin")
+        #     plot_noise_net_alltime(bol, "box")       
+
+        plot_paper_netnoise()                
         # plot_paper_noise_long_time_alloc("os_noise", "Detour (us)") # OK but not shown in the paper
+        # plot_paper_noise_long_time_alloc("noise_lat", "Latency (us)") 
+        # plot_paper_noise_long_time_alloc("noise_bw", "Bandwidth (Gb/s)")
+        # plot_noise("os_noise", "Detour (us)")
 
 
         # Plots used in the paper     
@@ -1433,21 +1467,18 @@ def main():
         #    plot_paper_hoverboard(provider) # OK  
 
 
-        # plot_paper_noise_long_instance_type("os_noise", "Detour (us)") # COOL       
-        # plot_paper_noise_long_time_alloc("noise_bw", "Normalized Bandwidth") # OK                
-        # plot_paper_noise_long_instance_type("noise_bw", "Normalized Bandwidth") # OK                
-        # plot_paper_striping("stripe") # OK        
+        
+        # plot_paper_noise_long_time_alloc("noise_bw", "Normalized Bandwidth") # OK  
+
+        # plot_paper_noise_long_instance_type("noise_bw", "Normalized Bandwidth") # OK  
+
         # plot_paper_striping("conc") # OK
-        # plot_paper_lat_bw_instances("unidirectional_bw") # OK
-        # plot_paper_uni_vs_bi() # OK
-        # plot_paper_noise_long_time_alloc("noise_lat", "Normalized Latency") # OK 
         # plot_paper_noise_long_instance_type("noise_lat", "Normalized Latency") # OK        
         # plot_paper_lat_bw() # OK
 
 
         # plot_logGP()
-        plot_paper_noise_long_time_alloc("noise_lat", "Latency (us)") 
-        # plot_paper_noise_long_time_alloc("noise_bw", "Bandwidth (Gb/s)")
+
 
 if __name__ == "__main__":
     main()
