@@ -5,7 +5,7 @@ snellius-short-genoa,HPC,Different Racks,Day,../data/snellius/2024_03_17_23_35_5
 snellius-long-genoa,HPC,Same Rack,Day,../data/snellius/2024_03_19_14_56_41
 snellius-long-genoa,HPC,Different Racks,Day,../data/snellius/2024_03_17_23_35_32
 snellius-long-rome,HPC,Same Rack,Day,../data/snellius/2024_03_19_15_00_03
-snellius-long-rome,HPC,Different Racks,Day,../data/snellius/2024_03_19_15_46_02
+snellius-long-rome,HPC,Different Racks,Day,../data/snellius/2024_03_18_00_34_07
 
 AWS,HPC (Metal),Same Rack,Night,../data/aws_c5n.metal_cluster/2022_03_23_10_26_24
 AWS,HPC (Metal),Same Rack,Day,../data/aws-hpc/2022_05_15_18_54_34
