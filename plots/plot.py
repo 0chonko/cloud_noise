@@ -40,7 +40,7 @@ instances = ["HPC", "HPC (Metal)", "HPC (200 Gb/s)"]
 placements = ["Same Rack", "Different Racks"]
 
 times = ["Night", "Day"]
-MINUTES_LENGTH = 1440
+MINUTES_LENGTH = 60
 
 ROWS=math.ceil(len(providers) / 5)
 COLS=min(5, len(providers))
@@ -379,19 +379,48 @@ def plot_size_vs_lat_bw(df, ax, data_type, data_type_human, style, provider, xli
         tick_spacing = 4
     if innertick_spacing == None:
         innertick_spacing = tick_spacing
+
+    size_stats = df.groupby(['Message Size']).describe()
+    size_stats.sort_values(by=(data_type_human, '25%'), inplace=True)
+    x = size_stats.index
+    medians = size_stats[(data_type_human, '50%')]
+    medians.name = data_type_human
+    quartiles1 = size_stats[(data_type_human, '25%')]
+    quartiles3 = size_stats[(data_type_human, '75%')]
+    print(quartiles3)
+    # ax = sns.lineplot(x, quartiles1)
+    # ax = sns.lineplot(x, medians) 
+    # ax.fill_between(x, quartiles1, quartiles3, alpha=0.3); 
+
     if palette is not None:
-        ax = sns.lineplot(data=df, x="Message Size", y=data_type_human, style=style, \
-                hue=style, markers=markers, dashes=dashes, ci=plot_ci, sort=False, palette=palette, ax=ax)    
+        # ax = sns.lineplot(data=df, x="Message Size", y=data_type_human, style=style, \
+        #         hue=style, markers=markers, dashes=dashes, ci=plot_ci, sort=False, palette=palette, ax=ax)    
+        print("yo")
     else:
-        ax = sns.lineplot(data=df, x="Message Size", y=data_type_human, style=style, \
-                      hue=style, markers=True, dashes=True, ci=plot_ci, sort=False, ax=ax)    
+        print("yo")
+        # print(df["data_type_human"])
+        ax = sns.lineplot(data=quartiles1, x="Message Size", y="(Bandwidth (Gb/s), 25%)", style=style, \
+              hue=style, markers=True, dashes=True, ci=None, sort=False, ax=ax, estimator=np.median, errorbar=None)
+        # ax = sns.lineplot(data=df, x=quartiles1, y=data_type_human, style=style, \
+        #       hue=style, markers=True, dashes=True, ci=None, sort=False, ax=ax, estimator=np.median, errorbar=None)
+
+
+        # Fill between the upper and lower quartiles
+        # ax.fill_between(bounds.index, quartiles3, quartiles1, alpha=0.3)
+        # bounds = df.groupby("Message Size")[data_type_human].quantile((0.25,0.75)).unstack()
+        # ax.fill_between(x=bounds.index, y1=bounds.iloc[:,0], y2=bounds.iloc[:,1], alpha=0.9, interpolate=True)    
+        # ax = sns.lineplot(data=df, x="Message Size", y=data_type_human, \
+        #           markers=True, dashes=True, ci=None) 
+        ax.fill_between(x, quartiles3, quartiles1, alpha=1); 
+
+           
     #ax.legend(title=None, ncol=3)
     ax.legend(ncol=3, fontsize=5, title_fontsize=5, title=style)
     ax.xaxis.set_major_locator(ticker.MultipleLocator(tick_spacing))
     if xlim != None:
         ax.set(xlim=xlim) 
     if ylim != None:
-        ax.set(ylim=ylim) 
+        ax.set(ylim=250) 
    
     # inset axes....
     if innerpars != None:
@@ -569,7 +598,7 @@ def plot_paper_striping(stripe_or_conc="stripe"):
     #   - one sublot for each provider/instance type
     #   - Fixed time (Night) and allocation (Same Rack)
     
-    for metric in ["bidirectional_lat"]: # TODO: ALSO CHANGE THIS
+    for metric in ["bidirectional_bw"]: # TODO: ALSO CHANGE THIS
         filename = 'out/paper_pre/' + metric + '_' + stripe_or_conc + '.pdf'
         print("Plotting " + filename + " ...")
         rows = 2  # Adjust the number of rows to match the size of the axes array
@@ -581,7 +610,7 @@ def plot_paper_striping(stripe_or_conc="stripe"):
             for j, placement in enumerate(placements):
                 # Get data
                 df = pd.DataFrame()
-                for conc in [1, 2, 4, 8, 16]:
+                for conc in [1]:
                     if stripe_or_conc == "stripe" or conc == 1:
                         suffix = "x" + str(conc)
                     else:
@@ -601,12 +630,12 @@ def plot_paper_striping(stripe_or_conc="stripe"):
                 ylim = None
                 if "lat" in metric:  # Lat
                     innerxlim = (0, 16)
-                    innerylim = None
+                    innerylim = (0, 100)  # Adjust the y-axis limit to your desired range
                     innerpars = [0.15, 0.45, 0.45, 0.45]
                     innerpars_dt = "RTT/2 (us)"
                 else:  # Bw
                     innerxlim = (0, 16)
-                    innerylim = None
+                    innerylim = (0, 100)  # Adjust the y-axis limit to your desired range
                     ylim = None
                     innerpars = [0.15, 0.45, 0.45, 0.45]
                     innerpars_dt = "RTT/2 (us)"
@@ -617,7 +646,6 @@ def plot_paper_striping(stripe_or_conc="stripe"):
                 ax.get_legend().remove()
                 ax.tick_params(axis='y', labelsize=4)  # Set y-axis label size
                 ax.tick_params(axis='x', labelsize=4)  # Set y-axis label size
-                
 
 
         if stripe_or_conc == "stripe":
