@@ -6,7 +6,8 @@
 #SBATCH --partition=genoa
 #SBATCH --time=01:40:00
 #SBATCH --exclusive
-#SBATCH --nodelist=tcn[630,882]
+#SBATCH --nodelist=tcn[659,929]
 
-./run.sh -k "Snellius-short-genoa, HPC, Different Racks, Day" &
+
+cd ../ && ./run.sh -k "Snellius-short-genoa, HPC, Different Racks, Day" &
 wait

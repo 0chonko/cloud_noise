@@ -1,0 +1,30 @@
+# Sysname : Linux
+# Nodename: tcn1001.local.snellius.surf.nl
+# Release : 4.18.0-372.80.1.el8_6.x86_64
+# Version : #1 SMP Fri Nov 3 14:30:16 EDT 2023
+# Machine : Linux
+## Netgauge v2.4.6 - mode mpi - 2 processes
+##
+## A...message size [byte]
+##
+## B...minimum send blocking time
+## C...average send blocking time
+## D...median send blocking time
+## E...maximum send blocking time
+## F...standard deviation for send blocking time (stddev)
+## G...number of send blocking time values, that were bigger than avg + 2 * stddev.
+##
+## H...minimum RTT/2
+## I...average RTT/2
+## J...median RTT/2
+## K...maximum RTT/2
+## L...standard deviation for RTT/2 (stddev)
+## M...number of RTT/2 values, that were bigger than avg + 2 * stddev.
+##
+## N...minimum throughput [Mbit/sec]
+## O...average throughput [Mbit/sec]
+## P...median throughput [Mbit/sec]
+## Q...maximum throughput [Mbit/sec]
+##
+## A  -  B  C  D  E  (F G) - H  I  J  K  (L M)  -  N  O  P  Q
+1 - 0.11 0.24 0.24 0.67 (0.04 67) - 1.49 1.63 1.60 6.94 (0.22 13) - 1.15 4.89 4.98 5.37

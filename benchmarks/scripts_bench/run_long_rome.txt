@@ -1,0 +1,34 @@
+Lmod has detected the following error: The following module(s) are unknown:
+"hpcx/hpcx-ompi"
+
+Please check the spelling or version number. Also try "module spider ..."
+It is also possible your cache file is out-of-date; it may help to try:
+  $ module --ignore_cache load "hpcx/hpcx-ompi"
+
+Also make sure that all modulefiles written in TCL start with the string
+#%Module
+
+
+
+tput: No value for $TERM and no -T specified
+tput: No value for $TERM and no -T specified
+tput: No value for $TERM and no -T specified
+Writing to ../data/oracle-hpc/2024_03_21_14_29_33
+Running netgauge OS noise test for 120 seconds ... [Done][126 seconds]
+Running netgauge network noise MPI test for 86400 seconds ...slurmstepd: error: *** JOB 5640397 ON tcn473 CANCELLED AT 2024-03-21T14:56:15 ***
+slurmstepd: error: container_p_join: setns failed for /slurm/5640397/.ns: Invalid argument
+slurmstepd: error: container_g_join(5640397): Invalid argument
+
+JOB STATISTICS
+==============
+Job ID: 5640397
+Cluster: snellius
+User/Group: gsavchenko/gsavchenko
+State: CANCELLED (exit code 0)
+Nodes: 2
+Cores per node: 128
+CPU Utilized: 00:07:50
+CPU Efficiency: 0.11% of 4-19:46:08 core-walltime
+Job Wall-clock time: 00:27:08
+Memory Utilized: 200.61 MB
+Memory Efficiency: 0.04% of 448.00 GB

@@ -254,3 +254,11 @@ Snellius-short-genoa, HPC,Compute,,../data//2024_03_17_23_16_10/gemm_
 Snellius-long-genoa, HPC,Compute,,../data//2024_03_17_23_16_10/gemm_
 Snellius-short-genoa, HPC,Compute,,../data//2024_03_17_23_16_10/gemm_
 Snellius-short-genoa, HPC,Compute,,../data//2024_03_17_23_16_10/gemm_
+snellius-short-genoa,HPC,Same Rack,Day,../data//2024_03_19_14_31_00
+snellius-short-genoa,HPC,Compute,,../data//2024_03_19_14_31_00/gemm_
+snellius-short-genoa,HPC,Same Rack,Day,../data//2024_03_19_14_32_14
+snellius-short-genoa,HPC,Compute,,../data//2024_03_19_14_32_14/gemm_
+snellius-short-genoa,HPC,Same Rack,Day,../data//2024_03_19_14_35_06
+snellius-short-genoa,HPC,Compute,,../data//2024_03_19_14_35_06/gemm_
+snellius-short-genoa,HPC,Same Rack,Day,../data//2024_03_19_14_35_38
+snellius-short-genoa,HPC,Compute,,../data//2024_03_19_14_35_38/gemm_

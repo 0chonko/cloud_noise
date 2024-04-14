@@ -58,7 +58,6 @@ done
 pushd netgauge
     ./configure ${NG_CONFIGURE_FLAGS}
     echo ${NG_CONFIGURE_FLAGS}
-    echo AIAIAIAIAIAIAIAIAIAA
     make
     if [ ! -f "netgauge" ]; then
         echo "${RED}[Error] netgauge compilation failed, please check error messages above.${NC}"
@@ -73,19 +72,33 @@ pushd netgauge
 popd
 
 # Compile GEMM benchmark
-pushd gemm
-    GEMM_TYPE=""  
-    IS_INTEL=$(grep -c GenuineIntel /proc/cpuinfo)    
-    if [ $IS_INTEL -gt 0 ] ; then   
-        GEMM_TYPE=mkl
-    else
-        GEMM_TYPE=blis
-    fi
-    make ${GEMM_TYPE}
-    if [ ! -f "dgemmbench.${GEMM_TYPE}" ]; then
-        echo "${RED}[Error] gemmbench compilation failed, please check error messages above.${NC}"
-        exit 1
-    fi        
-popd
+# pushd gemm
+#     GEMM_TYPE=""  
+#     IS_INTEL=$(grep -c GenuineIntel /proc/cpuinfo)    
+#     if [ $IS_INTEL -gt 0 ] ; then   
+#         GEMM_TYPE=mkl
+#     else
+#         GEMM_TYPE=blis
+#     fi
+#     make ${GEMM_TYPE}
+#     if [ ! -f "dgemmbench.${GEMM_TYPE}" ]; then
+#         echo "${RED}[Error] gemmbench compilation failed, please check error messages above.${NC}"
+#         exit 1
+#     fi        
+# popd
+
+# Clean targets
+clean() {
+    rm -f misc/hoverboard
+    rm -f misc/check_mpi_wtime_res
+    rm -f libstripe/libstripe.o
+    rm -f thread-pool/thpool.o
+    rm -f libstripe/libstripe.so
+    rm -f collectives/*.bin
+    rm -f netgauge/netgauge
+}
+
+# Run clean target
+clean
 
 echo "${GREEN}Everything compiled successfully.${NC}"

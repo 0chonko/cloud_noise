@@ -8,5 +8,5 @@
 #SBATCH --exclusive
 
 
-./run.sh -l -k "Snellius-long-genoa, HPC, Same Rack, Day" &
+cd ../ && ./run.sh -l -k "snellius-long-genoa,HPC,Same Rack,Day" &
 wait

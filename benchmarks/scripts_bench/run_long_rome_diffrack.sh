@@ -8,5 +8,5 @@
 #SBATCH --exclusive
 #SBATCH --nodelist=tcn[281,430]
 
-./run.sh -l -k "Snellius-long-rome, HPC, Different Racks, Day" &
+cd ../ && ./run.sh -l -k "snellius-long-rome,HPC,Different Racks,Day" &
 wait

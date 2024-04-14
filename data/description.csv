@@ -13,3 +13,33 @@ Snellius-long-rome, HPC, Same Rack, Day,../data/oracle-hpc/2024_03_17_23_39_06
 Snellius-long-rome, HPC,Compute,,../data/oracle-hpc/2024_03_17_23_39_06/gemm_
 Snellius-long-rome, HPC, Different Racks, Day,../data/oracle-hpc/2024_03_18_00_34_07
 Snellius-long-rome, HPC,Compute,,../data/oracle-hpc/2024_03_18_00_34_07/gemm_
+snellius-short-genoa,HPC,Same Rack,Day,../data/oracle-hpc/2024_03_19_14_35_19
+snellius-short-genoa,HPC,Compute,,../data/oracle-hpc/2024_03_19_14_35_19/gemm_
+snellius-short-genoa,HPC,Same Rack,Day,../data/oracle-hpc/2024_03_19_14_42_09
+snellius-short-genoa,HPC,Compute,,../data/oracle-hpc/2024_03_19_14_42_09/gemm_
+snellius-short-genoa,HPC,Same Rack,Day,../data/oracle-hpc/2024_03_19_14_49_56
+snellius-short-genoa,HPC,Compute,,../data/oracle-hpc/2024_03_19_14_49_56/gemm_
+Snellius-long-genoa,HPC,Same Rack,Day,../data/oracle-hpc/2024_03_19_14_56_41
+Snellius-long-genoa,HPC,Compute,,../data/oracle-hpc/2024_03_19_14_56_41/gemm_
+Snellius-long-rome, HPC, Same Rack, Day,../data/oracle-hpc/2024_03_19_15_00_03
+Snellius-long-rome, HPC,Compute,,../data/oracle-hpc/2024_03_19_15_00_03/gemm_
+Snellius-long-rome, HPC, Different Racks, Day,../data/oracle-hpc/2024_03_19_15_46_02
+Snellius-long-rome, HPC,Compute,,../data/oracle-hpc/2024_03_19_15_46_02/gemm_
+Snellius-long-genoa, HPC, Different Racks, Day,../data/oracle-hpc/2024_03_20_22_47_44
+Snellius-long-genoa, HPC,Compute,,../data/oracle-hpc/2024_03_20_22_47_44/gemm_
+Snellius-short-genoa, HPC, Different Racks, Day,../data/oracle-hpc/2024_03_21_09_01_38
+Snellius-short-genoa, HPC,Compute,,../data/oracle-hpc/2024_03_21_09_01_38/gemm_
+Snellius-long-genoa,HPC,Same Rack,Day,../data/oracle-hpc/2024_03_21_13_58_04
+Snellius-long-genoa,HPC,Compute,,../data/oracle-hpc/2024_03_21_13_58_04/gemm_
+Snellius-long-rome, HPC, Same Rack, Day,../data/oracle-hpc/2024_03_21_13_59_20
+Snellius-long-rome, HPC,Compute,,../data/oracle-hpc/2024_03_21_13_59_20/gemm_
+Snellius-long-rome, HPC, Same Rack, Day,../data/oracle-hpc/2024_03_21_14_29_33
+Snellius-long-rome, HPC,Compute,,../data/oracle-hpc/2024_03_21_14_29_33/gemm_
+snellius-long-genoa,HPC,Same Rack,Day,../data/oracle-hpc/2024_03_21_14_58_32
+snellius-long-genoa,HPC,Compute,,../data/oracle-hpc/2024_03_21_14_58_32/gemm_
+snellius-long-genoa,HPC,Same Rack,Day,../data/snellius/2024_03_21_15_02_41
+snellius-long-genoa,HPC,Compute,,../data/snellius/2024_03_21_15_02_41/gemm_
+snellius-osonly-rome,HPC,Same Rack,Day,../data/snellius/2024_04_12_17_02_07
+snellius-osonly-rome,HPC,Compute,,../data/snellius/2024_04_12_17_02_07/gemm_
+snellius-osonly-rome,HPC,Same Rack,Day,../data/snellius/2024_04_12_17_05_22
+snellius-osonly-rome,HPC,Compute,,../data/snellius/2024_04_12_17_05_22/gemm_
