@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import math
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -29,41 +30,62 @@ sns.set_style("whitegrid")
 
 plot_ci = "sd"
 
-providers = ["snellius"]
-instances = ["HPC"]
+# providers = [ "snellius-short-genoa", "snellius-long-genoa", "snellius-short-rome", "snellius-long-rome", "GCP", "AWS", "Azure", "Oracle", "Daint", "Alps", "DEEP-EST"]
+providers = [ "snellius-short-genoa", "snellius-short-rome"]
+# providers = ["AWS", "Oracle", "Alps"]
+
+# providers = ["snellius-short-rome", "snellius-short-genoa"]
+EXPERIMENT_LENGTH = "long"
+instances = ["HPC", "HPC (Metal)", "HPC (200 Gb/s)"]
 placements = ["Same Rack", "Different Racks"]
+
 times = ["Night", "Day"]
+MINUTES_LENGTH = 60
+
+ROWS=math.ceil(len(providers) / 5)
+COLS=min(5, len(providers))
+
+TESTING_DATA_SHRINK = False
 
 # Optimal stuff
 instance_type_t = {}
-# instance_type_t["GCP"] = "HPC"
-# instance_type_t["AWS"] = "HPC (Metal)"
-# instance_type_t["Azure"] = "HPC"
-# instance_type_t["Oracle"] = "HPC (Metal)"
-# instance_type_t["Daint"] = "HPC (Metal)"
-# instance_type_t["Alps"] = "HPC (Metal)"
-# instance_type_t["DEEP-EST"] = "HPC (Metal)"
-instance_type_t["snellius"] = "HPC"
+instance_type_t["GCP"] = "HPC"
+instance_type_t["AWS"] = "HPC (Metal)"
+instance_type_t["Azure"] = "HPC"
+instance_type_t["Oracle"] = "HPC (Metal)"
+instance_type_t["Daint"] = "HPC (Metal)"
+instance_type_t["Alps"] = "HPC (Metal)"
+instance_type_t["DEEP-EST"] = "HPC (Metal)"
+instance_type_t["snellius-short-rome"] = "HPC"
+instance_type_t["snellius-long-rome"] = "HPC"
+instance_type_t["snellius-long-genoa"] = "HPC"
+instance_type_t["snellius-short-genoa"] = "HPC"
 
 placement_t = {}
-# placement_t["GCP"] = "Same Rack"
-# placement_t["AWS"] = "Same Rack"
-# placement_t["Azure"] = "Same Rack"
-# placement_t["Oracle"] = "Same Rack"
-# placement_t["Daint"] = "Same Rack"
-# placement_t["Alps"] = "Same Rack"
-# placement_t["DEEP-EST"] = "Same Rack"
-placement_t["snellius"] = "Same Rack"
+placement_t["GCP"] = "Same Rack"
+placement_t["AWS"] = "Same Rack"
+placement_t["Azure"] = "Same Rack"
+placement_t["Oracle"] = "Same Rack"
+placement_t["Daint"] = "Same Rack"
+placement_t["Alps"] = "Same Rack"
+placement_t["DEEP-EST"] = "Same Rack"
+placement_t["snellius-short-rome"] = "Same Rack"
+placement_t["snellius-long-rome"] = "Same Rack"
+placement_t["snellius-long-genoa"] = "Same Rack"
+placement_t["snellius-short-genoa"] = "Same Rack"
 
 time_t = {}
-# time_t["GCP"] = "Day"
-# time_t["AWS"] = "Day"
-# time_t["Azure"] = "Day"
-# time_t["Oracle"] = "Day"
-# time_t["Daint"] = "Day"
-# time_t["Alps"] = "Day"
-# time_t["DEEP-EST"] = "Day"
-time_t["snellius"] = "Day"
+time_t["GCP"] = "Day"
+time_t["AWS"] = "Day"
+time_t["Azure"] = "Day"
+time_t["Oracle"] = "Day"
+time_t["Daint"] = "Day"
+time_t["Alps"] = "Day"
+time_t["DEEP-EST"] = "Day"
+time_t["snellius-short-rome"] = "Day"
+time_t["snellius-long-rome"] = "Day"
+time_t["snellius-long-genoa"] = "Day"
+time_t["snellius-short-genoa"] = "Day"
 
 
 metric_human = {}
@@ -99,8 +121,14 @@ def fname(name):
         return "hpc"
     elif name =="HPC (200 Gb/s)":
         return "hpc200"
-    elif name =="snellius":
-        return "snellius"
+    elif name =="snellius-short-rome":
+        return "snellius-short-rome"
+    elif name == "snellius-long-genoa":
+        return "snellius-long-genoa"
+    elif name == "snellius-long-rome":
+        return "snellius-long-rome"
+    elif name == "snellius-short-genoa":
+        return "snellius-short-genoa"
     elif name == "Same Rack":
         return "same_rack"
     elif name == "Different Racks":
@@ -203,11 +231,12 @@ def get_data(provider, instance, placement, timestr, data_type):
     if data_type == "os_noise":
         col_names = ["Time (s)", "Detour (us)"]
     df = pd.read_csv(full_filename, comment="#", sep="\t", names=col_names) 
-    if timestr == "Long" and data_type != "os_noise":
+    if "longs" in provider and data_type != "os_noise":
+        print("Long run")
         #drop_perc = 0.99
         #drop_indices = np.random.choice(df.index, int(len(df)*drop_perc), replace=False)
         #df = df.drop(drop_indices)
-        bin_size = (len(df) / 1440) # One sample per minute
+        bin_size = (len(df) / 720) # One sample per minute
         df = df.groupby(df.index // bin_size).mean()
         # Rotate data so that it starts at 00:00
         start_time_h = int(paths[(provider, instance, placement, timestr)].split("/")[-1].split("_")[3])
@@ -222,6 +251,10 @@ def get_data(provider, instance, placement, timestr, data_type):
         df.reset_index(inplace=True)
         df = df.reindex(np.roll(df.index, -minutes_after_midnight))
 
+    if TESTING_DATA_SHRINK:
+        bin_size = (len(df) / 60) # One sample per minute
+        df = df.groupby(df.index // bin_size).mean()
+
     df["Provider"] = provider
     df["Instance"] = instance
     df["Placement"] = placement
@@ -229,6 +262,7 @@ def get_data(provider, instance, placement, timestr, data_type):
     if data_type != "os_noise":
         df["RTT/2 (us)"] = df["RTT/2 (us)"].astype(float)
         df["Bandwidth (Gb/s)"] = ((df["Message Size"]*8) / (df["RTT/2 (us)"]*1000.0)).astype(float)
+        df["Latency (us)"] = df["RTT/2 (us)"]
         df["Message Size"] = df.apply(lambda x: hr_size(x["Message Size"]), axis=1)
         df["Time (us)"] = df["RTT/2 (us)"].cumsum()
         df = df[df.index % iterations_per_run > warmup_iterations] # Exclude warmup iterations
@@ -236,7 +270,7 @@ def get_data(provider, instance, placement, timestr, data_type):
         df["Detour (us)"] = df["Detour (us)"].astype(float) / 1000.0 # It is actually in ns, so we need to convert to us
         df["Time (s)"] = df["Time (s)"].astype(float) / 1000000000.0 # It is actually in ns, so we need to convert to s
         # Cut
-        df = df[df["Time (s)"] < 5]
+        df = df[df["Time (s)"] < 3600]
     df["Sample"] = range(len(df))
     return df
 
@@ -254,6 +288,8 @@ def load_all(data_type):
     return df
 
 def plot_noise_single(df, ax, data_type, data_type_human, hue, plottype, showfliers=False):
+    print ("^^^^^^^^^^^^^^^^^^^^^^^")
+    print (df)
     if len(df) == 0:
         return
     if plottype == "violin":
@@ -290,22 +326,22 @@ def plot_noise(data_type, data_type_human, showfliers=False):
     ###########
     # Latency #
     ###########
-    fig, axes = plt.subplots(2, 2, figsize=(10,5), sharex=False, sharey=True)
-    plot_noise_single(df_same_rack_day, axes[0][0], data_type, data_type_human, "Instance", plottype, showfliers)
-    axes[0][0].set_title("Same Rack - Day")
-    axes[0][0].set_xlabel("")
+    fig, axes = plt.subplots(1, 2, figsize=(20,5), sharex=False, sharey=True)
+    plot_noise_single(df_same_rack_day, axes[0], data_type, data_type_human, "Instance", plottype, showfliers)
+    axes[0].set_title("Same Rack - Day")
+    axes[0].set_xlabel("")
 
-    plot_noise_single(df_different_rack_day, axes[0][1], data_type, data_type_human, "Instance", plottype, showfliers)
-    axes[0][1].set_title("Different Racks - Day")
-    axes[0][1].set_xlabel("")
+    plot_noise_single(df_different_rack_day, axes[1], data_type, data_type_human, "Instance", plottype, showfliers)
+    axes[1].set_title("Different Racks - Day")
+    axes[1].set_xlabel("")
 
-    plot_noise_single(df_same_rack_night, axes[1][0], data_type, data_type_human, "Instance", plottype, showfliers)
-    axes[1][0].set_title("Same Rack - Night")
-    axes[1][0].set_xlabel("")
+    # plot_noise_single(df_same_rack_night, axes[1][0], data_type, data_type_human, "Instance", plottype, showfliers)
+    # axes[1][0].set_title("Same Rack - Night")
+    # axes[1][0].set_xlabel("")
 
-    plot_noise_single(df_different_rack_night, axes[1][1], data_type, data_type_human, "Instance", plottype, showfliers)
-    axes[1][1].set_title("Different Racks - Night")    
-    axes[1][1].set_xlabel("")
+    # plot_noise_single(df_different_rack_night, axes[1][1], data_type, data_type_human, "Instance", plottype, showfliers)
+    # axes[1][1].set_title("Different Racks - Night")    
+    # axes[1][1].set_xlabel("")
 
     plt.tight_layout()
     fig.savefig(filename, format='pdf', dpi=100)
@@ -319,19 +355,21 @@ def plot_noise_long(data_type, data_type_human):
     x_col = ""
     print(data_type)
     for provider in providers:
-        if data_type == "os_noise":
-            df_tmp = get_data(provider, instance_type_t[provider], "Same Rack", "Day", data_type)
-            print("YOUR DF_TMP: ", df_tmp)
-            x_col = "Time (s)"
-        else:
-            df_tmp = get_data(provider, instance_type_t[provider], "Different Racks", "Day", data_type)
-            x_col = "Sample"
-        df = pd.concat([df, df_tmp])
+        for placement in placements:
+            if data_type == "os_noise":
+                df_tmp = get_data(provider, instance_type_t[provider], "Same Rack", "Day", data_type)
+                print("YOUR DF_TMP: ", df_tmp)
+                x_col = "Time (s)"
+            else:
+                df_tmp = get_data(provider, instance_type_t[provider], placement, "Day", data_type)
+                x_col = "Sample"
+            df = pd.concat([df, df_tmp])
     df.reset_index(inplace=True, drop=True)             
     df["Latency (us)"] = df["RTT/2 (us)"]
-    ax = sns.scatterplot(data=df, x=x_col, y=data_type_human, hue="Provider", style="Provider")
+    df["Provider_Placement"] = df["Provider"] + "_" + df["Placement"]  # New line
+    ax = sns.scatterplot(data=df, x=x_col, y=data_type_human, hue="Provider_Placement", style="Provider_Placement", edgecolor=None)  # Modified line
     if "Latency" in data_type_human and data_type != "os_noise":
-        ax.set(ylim=(1, 30))
+        ax.set(ylim=(1, None))
     plt.tight_layout()
     ax.figure.savefig(filename, format='pdf', dpi=100)
     plt.clf()
@@ -341,19 +379,48 @@ def plot_size_vs_lat_bw(df, ax, data_type, data_type_human, style, provider, xli
         tick_spacing = 4
     if innertick_spacing == None:
         innertick_spacing = tick_spacing
+
+    size_stats = df.groupby(['Message Size']).describe()
+    size_stats.sort_values(by=(data_type_human, '25%'), inplace=True)
+    x = size_stats.index
+    medians = size_stats[(data_type_human, '50%')]
+    medians.name = data_type_human
+    quartiles1 = size_stats[(data_type_human, '25%')]
+    quartiles3 = size_stats[(data_type_human, '75%')]
+    print(quartiles3)
+    # ax = sns.lineplot(x, quartiles1)
+    # ax = sns.lineplot(x, medians) 
+    # ax.fill_between(x, quartiles1, quartiles3, alpha=0.3); 
+
     if palette is not None:
-        ax = sns.lineplot(data=df, x="Message Size", y=data_type_human, style=style, \
-                hue=style, markers=markers, dashes=dashes, ci=plot_ci, sort=False, palette=palette, ax=ax)    
+        # ax = sns.lineplot(data=df, x="Message Size", y=data_type_human, style=style, \
+        #         hue=style, markers=markers, dashes=dashes, ci=plot_ci, sort=False, palette=palette, ax=ax)    
+        print("yo")
     else:
-        ax = sns.lineplot(data=df, x="Message Size", y=data_type_human, style=style, \
-                      hue=style, markers=True, dashes=True, ci=plot_ci, sort=False, ax=ax)    
+        print("yo")
+        # print(df["data_type_human"])
+        ax = sns.lineplot(data=quartiles1, x="Message Size", y="(Bandwidth (Gb/s), 25%)", style=style, \
+              hue=style, markers=True, dashes=True, ci=None, sort=False, ax=ax, estimator=np.median, errorbar=None)
+        # ax = sns.lineplot(data=df, x=quartiles1, y=data_type_human, style=style, \
+        #       hue=style, markers=True, dashes=True, ci=None, sort=False, ax=ax, estimator=np.median, errorbar=None)
+
+
+        # Fill between the upper and lower quartiles
+        # ax.fill_between(bounds.index, quartiles3, quartiles1, alpha=0.3)
+        # bounds = df.groupby("Message Size")[data_type_human].quantile((0.25,0.75)).unstack()
+        # ax.fill_between(x=bounds.index, y1=bounds.iloc[:,0], y2=bounds.iloc[:,1], alpha=0.9, interpolate=True)    
+        # ax = sns.lineplot(data=df, x="Message Size", y=data_type_human, \
+        #           markers=True, dashes=True, ci=None) 
+        ax.fill_between(x, quartiles3, quartiles1, alpha=1); 
+
+           
     #ax.legend(title=None, ncol=3)
-    ax.legend(ncol=3, fontsize=8, title_fontsize=8, title=style)
+    ax.legend(ncol=3, fontsize=5, title_fontsize=5, title=style)
     ax.xaxis.set_major_locator(ticker.MultipleLocator(tick_spacing))
     if xlim != None:
         ax.set(xlim=xlim) 
     if ylim != None:
-        ax.set(ylim=ylim) 
+        ax.set(ylim=250) 
    
     # inset axes....
     if innerpars != None:
@@ -374,13 +441,13 @@ def plot_size_vs_lat_bw(df, ax, data_type, data_type_human, style, provider, xli
         axins.tick_params(axis='y', labelsize=innerfontsize)
         axins.set_xlabel("")
         axins.set_ylabel(innerpars_dt, fontsize=innerfontsize)
-        #ax.indicate_inset_zoom(axins, edgecolor="black")
+        ax.indicate_inset_zoom(axins)
 
     #if "lat" in data_type:
     #    ax.set_yscale("log")    
 
 def plot_lat_bw(data_type, data_type_human, time, placement):
-    filename = 'out/lat_bw/' + data_type + '_' + fname(time) + '_' + fname(placement) + '.pdf'
+    filename = 'out/paper_pre/' + data_type + '_' + fname(time) + '_' + fname(placement) + '_bw.pdf'
     print("Plotting " + filename + " ...")
     # On a lineplot we can plot lat/bw as a function of two variables (three if we do 1D subplots, four if we do 2D subplots)
     # E.g., we can have 2x2 subplots (different cols = different placements, different rows = different time)
@@ -388,8 +455,8 @@ def plot_lat_bw(data_type, data_type_human, time, placement):
     # Each subplot has the x for the msg size, the y for the lat/bw, the hue for the instance type. Then 4 subplots (one for each provider)
     # We fix day/night and placement
     
-    rows = 2
-    cols = 3
+    rows = ROWS
+    cols = COLS
     fig, axes = plt.subplots(rows, cols, figsize=(10,5), sharex=False, sharey=True)
     i = 0    
     for provider in providers:
@@ -417,7 +484,7 @@ def plot_lat_bw(data_type, data_type_human, time, placement):
         plot_size_vs_lat_bw(df, ax, data_type, data_type_human, "Instance", provider)
         ax.set_title(provider)
         if "bw" in data_type:
-            ax.set(ylim=(0.0, 100.0))        
+            ax.set(ylim=(0.0, 200.0))        
         i += 1
 
     plt.tight_layout()
@@ -425,7 +492,7 @@ def plot_lat_bw(data_type, data_type_human, time, placement):
     plt.clf()
 
 def plot_lat_bw_conc(data_type, data_type_human, time, placement, instance_type, conc_or_stripe):
-    filename = 'out/lat_bw_' + conc_or_stripe + '/' + data_type + '_' + fname(instance_type) + '_' + fname(time) + '_' + fname(placement) + '.pdf'
+    filename = 'out/paper_pre/' + data_type + '_' + fname(instance_type) + '_' + fname(time) + '_' + fname(placement) + '_conc.pdf'
     print("Plotting " + filename + " ...")
     # On a lineplot we can plot lat/bw as a function of two variables (three if we do 1D subplots, four if we do 2D subplots)
     # E.g., we can have 2x2 subplots (different cols = different placements, different rows = different time)
@@ -433,8 +500,8 @@ def plot_lat_bw_conc(data_type, data_type_human, time, placement, instance_type,
     # Each subplot has the x for the msg size, the y for the lat/bw, the hue for the concurrency level. Then 4 subplots (one for each provider)
     # We fix placement, day/night, and instance type
     
-    rows = 2
-    cols = 3
+    rows = ROWS
+    cols = COLS
     fig, axes = plt.subplots(rows, cols, figsize=(10,5), sharex=False, sharey=True)
     i = 0
     hue = ""
@@ -446,7 +513,7 @@ def plot_lat_bw_conc(data_type, data_type_human, time, placement, instance_type,
     for provider in providers:
         # Get data
         df = pd.DataFrame()
-        for conc in [1, 2, 4, 8, 16]:
+        for conc in [2, 4, 8, 16]:
             if conc_or_stripe == "stripe":
                 suffix = "x" + str(conc)
             else:
@@ -476,7 +543,7 @@ def plot_lat_bw_conc(data_type, data_type_human, time, placement, instance_type,
         plot_size_vs_lat_bw(df, ax, data_type, data_type_human, hue, provider)
         ax.set_title(provider)        
         if "bw" in data_type:
-            ax.set(ylim=(0.0, 100.0))
+            ax.set(ylim=(0.0, 200.0))
         i += 1
 
     plt.tight_layout()
@@ -484,7 +551,7 @@ def plot_lat_bw_conc(data_type, data_type_human, time, placement, instance_type,
     plt.clf()
 
 def plot_lat_bw_sw(data_type, data_type_human, time, placement, instance_type):
-    filename = 'out/lat_bw_sw/' + data_type + '_' + fname(instance_type) + '_' + fname(time) + '_' + fname(placement) + '.pdf'
+    filename = 'out/paper_pre/' + data_type + '_' + fname(instance_type) + '_' + fname(time) + '_' + fname(placement) + '_lat_bw_sw.pdf'
     print("Plotting " + filename + " ...")
     # On a lineplot we can plot lat/bw as a function of two variables (three if we do 1D subplots, four if we do 2D subplots)
     # E.g., we can have 2x2 subplots (different cols = different placements, different rows = different time)
@@ -492,14 +559,15 @@ def plot_lat_bw_sw(data_type, data_type_human, time, placement, instance_type):
     # Each subplot has the x for the msg size, the y for the lat/bw, the hue for the sw stack. Then 4 subplots (one for each provider)
     # We fix placement, day/night, and instance type
 
-    rows = 2
-    cols = 3
+    rows = ROWS
+    cols = COLS
     fig, axes = plt.subplots(rows, cols, figsize=(10,5), sharex=False, sharey=True)
     i = 0
     for provider in providers:        
         # Get data
         df = pd.DataFrame()
-        for sw in ["mpi", "tcp", "udp", "ib", "ibv"]:
+        for sw in ["mpi"]:
+        # for sw in ["mpi", "tcp", "udp", "ib", "ibv"]:
             suffix = "_" + sw 
             if provider == "AWS":
                 suffix += "_conc1"
@@ -515,7 +583,7 @@ def plot_lat_bw_sw(data_type, data_type_human, time, placement, instance_type):
         plot_size_vs_lat_bw(df, ax, data_type, data_type_human, "Sw", provider)
         ax.set_title(provider)
         if "bw" in data_type:
-            ax.set(ylim=(0.0, 100.0))
+            ax.set(ylim=(0.0, 200.0))
         i += 1
 
     plt.tight_layout()
@@ -529,60 +597,62 @@ def plot_paper_striping(stripe_or_conc="stripe"):
     #   - hue: striping factor
     #   - one sublot for each provider/instance type
     #   - Fixed time (Night) and allocation (Same Rack)
-    for metric in ["unidirectional_bw"]:
+    
+    for metric in ["bidirectional_bw"]: # TODO: ALSO CHANGE THIS
         filename = 'out/paper_pre/' + metric + '_' + stripe_or_conc + '.pdf'
         print("Plotting " + filename + " ...")
-        rows = 1
-        cols = 2
-        fig, axes = plt.subplots(rows, cols, figsize=(8,2.5), sharex=False, sharey=True)
-        i = 0
+        rows = 2  # Adjust the number of rows to match the size of the axes array
+        cols = 2  # Adjust the number of columns to match the size of the axes array
+        fig, axes = plt.subplots(rows, cols, figsize=(12, 4), sharex=True, sharey=True)
         handles = None
         labels = None
-        for provider in ["snellius"]:
-            # Get data
-            df = pd.DataFrame()
-            for conc in [1, 2, 4, 8, 16]:
-                if stripe_or_conc == "stripe" or conc == 1:
-                    suffix = "x" + str(conc)
-                else:
-                    suffix = "y" + str(conc)
-                dfc = load_all(metric + suffix)
-                dfc = filter_instance(dfc, instance_type_t[provider])
-                dfc = filter_placement(dfc, placement_t[provider])
-                dfc = filter_time(dfc, time_t[provider])
-                dfc["Stripes"] = str(conc)
-                df = pd.concat([df, filter_provider(dfc, provider)])
-            df.reset_index(inplace=True, drop=True)             
-            #ax = axes[int(i / cols)][i % cols]
-            ax = axes[i]
-            innerxlim=None
-            innerylim=None
-            innerpars = None
-            xlim = None
-            ylim = None
-            if "lat" in metric: # Lat
-                innerxlim=(0, 16)
-                innerylim=(20, 50)
-                innerpars = [0.15, 0.45, 0.45, 0.45]
-                innerpars_dt = "RTT/2 (us)"
-            else: # Bw
-                innerxlim=(0, 16)
-                innerylim=(0, 50)
-                ylim=(0,100)
-                innerpars = [0.15, 0.45, 0.45, 0.45]
-                innerpars_dt = "RTT/2 (us)"
+        for i, provider in enumerate(providers):
+            for j, placement in enumerate(placements):
+                # Get data
+                df = pd.DataFrame()
+                for conc in [1]:
+                    if stripe_or_conc == "stripe" or conc == 1:
+                        suffix = "x" + str(conc)
+                    else:
+                        suffix = "y" + str(conc)
+                    dfc = load_all(metric + suffix)
+                    dfc = filter_instance(dfc, instance_type_t[provider])
+                    dfc = filter_placement(dfc, (placement,))
+                    dfc = filter_time(dfc, time_t[provider])
+                    dfc["Stripes"] = str(conc)
+                    df = pd.concat([df, filter_provider(dfc, provider)])
+                df.reset_index(inplace=True, drop=True)
+                ax = axes[j][i]
+                innerxlim = None
+                innerylim = None
+                innerpars = None
+                xlim = None
+                ylim = None
+                if "lat" in metric:  # Lat
+                    innerxlim = (0, 16)
+                    innerylim = (0, 100)  # Adjust the y-axis limit to your desired range
+                    innerpars = [0.15, 0.45, 0.45, 0.45]
+                    innerpars_dt = "RTT/2 (us)"
+                else:  # Bw
+                    innerxlim = (0, 16)
+                    innerylim = (0, 100)  # Adjust the y-axis limit to your desired range
+                    ylim = None
+                    innerpars = [0.15, 0.45, 0.45, 0.45]
+                    innerpars_dt = "RTT/2 (us)"
 
-            plot_size_vs_lat_bw(df, ax, metric, metric_human[metric], "Stripes", provider, xlim=xlim, ylim=ylim, innerpars_dt=innerpars_dt, innerpars=innerpars, innerxlim=innerxlim, innerylim=innerylim)
-            ax.set_title(provider)   
-            handles, labels = ax.get_legend_handles_labels()     
-            ax.get_legend().remove()
-            i += 1
+                plot_size_vs_lat_bw(df, ax, metric, metric_human[metric], "Stripes", f"{provider} - {placement}", xlim=xlim, ylim=ylim, innerpars_dt=innerpars_dt, innerpars=innerpars, innerxlim=innerxlim, innerylim=innerylim)
+                ax.set_title(f"{provider} - {placement}", fontsize=6)
+                handles, labels = ax.get_legend_handles_labels()
+                ax.get_legend().remove()
+                ax.tick_params(axis='y', labelsize=4)  # Set y-axis label size
+                ax.tick_params(axis='x', labelsize=4)  # Set y-axis label size
+
 
         if stripe_or_conc == "stripe":
             title = "Striping Factor"
         else:
             title = "Concurrent Communications"
-        fig.legend(handles, labels, bbox_to_anchor=(.72, 1.02), ncol=5, title=title, fontsize=8, title_fontsize=8)
+        fig.legend(handles, labels, bbox_to_anchor=(.72, 0.98), ncol=5, title=title, fontsize=4, title_fontsize=4)
         plt.tight_layout()
         plt.subplots_adjust(top=0.8)
         fig.savefig(filename, format='pdf', dpi=100)
@@ -597,8 +667,8 @@ def plot_paper_lat_bw():
     #   - Fixed time (Night), allocation (Same Rack), and instance types (HPC)
     filename = 'out/paper_pre/lat_bw.pdf'
     print("Plotting " + filename + " ...")
-    rows = 1
-    cols = 1
+    rows = ROWS
+    cols = COLS
     fig, axes = plt.subplots(rows, cols, figsize=(8,3), sharex=False, sharey=False)
     i = 0
     for metric in ["unidirectional_bw"]:        
@@ -643,7 +713,7 @@ def plot_paper_lat_bw():
         else: # Bw
             innerxlim=(0, 8)
             innerylim=(0, 30)
-            ylim=(0,100)
+            ylim=(0,200)
             innerpars = [0.07, 0.35, 0.44, 0.55]
             innerpars_dt = "RTT/2 (us)"
 
@@ -653,7 +723,7 @@ def plot_paper_lat_bw():
         ax.get_legend().remove()
         i += 1
 
-    fig.legend(handles, labels, bbox_to_anchor=(.97, .95), ncol=7, fontsize=10, title_fontsize=10)
+    fig.legend(handles, labels, bbox_to_anchor=(.97, .95), ncol=7, fontsize=5, title_fontsize=5)
     plt.tight_layout()
     plt.subplots_adjust(top=0.8)
     fig.savefig(filename, format='pdf', dpi=100)
@@ -668,13 +738,20 @@ def plot_paper_lat_bw_instances(metric):
     #   - Fixed time (Night), allocation (Same Rack)
     filename = 'out/paper_pre/' + metric + '_instances.pdf'
     print("Plotting " + filename + " ...")
-    rows = 2
-    cols = 2
+
+
+    rows = ROWS
+    cols = COLS
+
+
+    
     fig, axes = plt.subplots(rows, cols, figsize=(8,5), sharex=False, sharey=False)
     i = 0
     palette_dict = {}
     legend_elements = []
     markers = {"Normal" : 'o', "HPC" : 'D', "HPC (Metal)" : 's', "HPC (200 Gb/s)" : '^'}
+    # markers = {"GCP" : 'o', "AWS" : 'D', "Daint" : 's', "Azure" : '^', "Alps" : "P", "DEEP-EST" : 'X', "Oracle" : 'p', "snellius-short-rome" : 's', "snellius-short-genoa" : 's'}
+
     #dashes = {"Normal" : '-', "HPC" : '--', "HPC (Metal)" : '-.', "HPC (200 Gb/s)" : ':'}
     for instance in instances:
         palette_dict[instance] = sns.color_palette()[i]
@@ -738,7 +815,7 @@ def plot_paper_lat_bw_instances(metric):
                 innerylim=(10, 25)
             else:
                 innerylim=(0, 40)
-            #ylim=(0,200)
+            ylim=(0,200)
             if provider == "AWS":
                 innerpars = [0.18, 0.4, 0.45, 0.45]
             elif provider == "GCP":
@@ -754,7 +831,7 @@ def plot_paper_lat_bw_instances(metric):
         ax.get_legend().remove()
         i += 1
 
-    fig.legend(handles=legend_elements, bbox_to_anchor=(.82, 1), ncol=len(instances), fontsize=10, title_fontsize=10)
+    fig.legend(handles=legend_elements, bbox_to_anchor=(.82, 1), ncol=len(instances), fontsize=5, title_fontsize=5)
     plt.tight_layout()
     plt.subplots_adjust(top=0.88)
     fig.savefig(filename, format='pdf', dpi=100)
@@ -771,8 +848,8 @@ def plot_paper_bibw():
     #   - Fixed time (Night), allocation (Same Rack), and instance types (HPC)
     filename = 'out/paper_pre/bibw.pdf'
     print("Plotting " + filename + " ...")
-    rows = 1
-    cols = 1
+    rows = ROWS
+    cols = COLS
     fig, axes = plt.subplots(rows, cols, figsize=(5,2.5), sharex=False, sharey=False)
     i = 0
     for metric in ["bidirectional_bw"]:        
@@ -819,13 +896,13 @@ def plot_paper_bibw():
         ylim = None
         if "lat" in metric: # Lat
             innerxlim=(0, 20)
-            innerylim=(0, 100)
+            innerylim=(0, 200)
             innerpars = [0.1, 0.4, 0.45, 0.45]
             innerpars_dt = "RTT/2 (us)"
         else: # Bw
             innerxlim=(0, 20)
-            innerylim=(0, 100)
-            ylim=(0,100)
+            innerylim=(0, 200)
+            ylim=(0,200)
             innerpars = [0.1, 0.5, 0.45, 0.45]
             innerpars_dt = "RTT/2 (us)"
 
@@ -835,7 +912,7 @@ def plot_paper_bibw():
         ax.get_legend().remove()
         i += 1
 
-    fig.legend(handles, labels, bbox_to_anchor=(1, 1), ncol=6, fontsize=8, title_fontsize=8)
+    fig.legend(handles, labels, bbox_to_anchor=(1, 1), ncol=6, fontsize=5, title_fontsize=5)
     plt.tight_layout()
     plt.subplots_adjust(top=0.85)
     fig.savefig(filename, format='pdf', dpi=100)
@@ -851,8 +928,8 @@ def plot_paper_netnoise():
     #   - Fixed time (Day) and allocation (Different Racks)
     filename = 'out/paper_pre/netnoise.pdf'
     print("Plotting " + filename + " ...")
-    rows = 1
-    cols = 2
+    rows = 2
+    cols = 5
     fig, axes = plt.subplots(rows, cols, figsize=(10,2.5), sharex=False, sharey=False)
     i = 0
     
@@ -865,6 +942,7 @@ def plot_paper_netnoise():
         #axes[0][0].set_title(metric_human[metric])
         #axes[0][0].set_xlabel("")
         #axes[i].get_legend().remove()
+        exit()
         i += 1
 
     fig.legend(bbox_to_anchor=(1.3, 0.6))
@@ -953,7 +1031,7 @@ def plot_noise_net_alltime(lat_or_bw, plot_type):
         else:
             rows = 1
             cols = 1
-            figsize = (5, 2.5)
+            figsize = (10, 5)
         fig, axes = plt.subplots(rows, cols, figsize=figsize, sharex=True, sharey=True)
         i = 0
         hue = None
@@ -964,13 +1042,14 @@ def plot_noise_net_alltime(lat_or_bw, plot_type):
             lat_or_bw_long = "Bandwidth (Gb/s)"
 
         #for provider in providers:    
-        for provider in ["snellius"]:    
+        for provider in providers:    
             # Create sub frames
             df = load_all(lat_or_bw)
             df = filter_provider(df, provider)
             df = filter_instance(df, instance_type_t[provider])            
             df = filter_placement(df, placement_tmp)
             df = filter_time(df, time_tmp)
+
             df["Type"] = df["Time"] + " - " + df["Placement"]
             
             if plot_type == "kde":
@@ -1018,7 +1097,11 @@ def plot_paper_uni_vs_bi():
         stripes["Daint"] = 1
         stripes["Alps"] = 1
         stripes["DEEP-EST"] = 1
-        stripes["snellius"] = 1
+        stripes["snellius-short-rome"] = 1
+        stripes["snellius-long-rome"] = 1
+        stripes["snellius-long-genoa"] = 1
+        stripes["snellius-short-genoa"] = 1
+
 
         opt_msg_size_uni = {}
         opt_msg_size_uni["GCP"] = "16MiB"
@@ -1028,7 +1111,10 @@ def plot_paper_uni_vs_bi():
         opt_msg_size_uni["Daint"] = "16MiB"
         opt_msg_size_uni["Alps"] = "16MiB"
         opt_msg_size_uni["DEEP-EST"] = "16MiB"
-        opt_msg_size_uni["snellius"] = "16MiB"
+        opt_msg_size_uni["snellius-short-rome"] = "16MiB"
+        opt_msg_size_uni["snellius-long-rome"] = "16MiB"
+        opt_msg_size_uni["snellius-long-genoa"] = "16MiB"
+        opt_msg_size_uni["snellius-short-genoa"] = "16MiB"
         
         opt_msg_size_bi = {}
         opt_msg_size_bi["GCP"] = "16MiB"
@@ -1038,7 +1124,10 @@ def plot_paper_uni_vs_bi():
         opt_msg_size_bi["Daint"] = "16MiB"        
         opt_msg_size_bi["Alps"] = "16MiB"        
         opt_msg_size_bi["DEEP-EST"] = "16MiB"    
-        opt_msg_size_bi["snellius"] = "16MiB"
+        opt_msg_size_bi["snellius-short-rome"] = "16MiB"
+        opt_msg_size_bi["snellius-long-rome"] = "16MiB"
+        opt_msg_size_bi["snellius-long-genoa"] = "16MiB"
+        opt_msg_size_bi["snellius-short-genoa"] = "16MiB"
 
         for provider in providers:
             # Get data 
@@ -1060,20 +1149,30 @@ def plot_paper_uni_vs_bi():
             df = pd.concat([df, dfc])
 
     df.reset_index(inplace=True, drop=True)           
-    fig, axes = plt.subplots(1, 1, figsize=(5, 2), sharex=True, sharey=True)
+    fig, axes = plt.subplots(1, 1, figsize=(8, 4), sharex=True, sharey=True)
     ax = sns.violinplot(data=df, x="Provider", y="Bandwidth (Gb/s)", hue="Type", saturation=1)    
     patch_violinplot(sns.color_palette(), df["Type"].nunique())
     ax.legend_.set_title(None)
     ax.set_xlabel(None)
+    ax.tick_params(axis='x', labelsize=5)
+    ax.tick_params(axis='y', labelsize=5)
+
     fig.tight_layout()
     fig.savefig(filename, format='pdf', dpi=100)
     plt.clf()
 
+#
+#
+# 
+#  TODO: HERE'S THE INTERQUIRTILE RANGE MAYBE
+#
+#
+#
 def get_noise_single(provider, instance_type, placement, time, data_type, ax, j, kde):
     df_tmp = get_data(provider, instance_type, placement, time, data_type)
     print("Plotting ", df_tmp)
     if df_tmp is not None:
-        df_tmp["Time (min)"] = (df_tmp["Sample"] / len(df_tmp)) * 60.0 # * 1e9                
+        df_tmp["Time (min)"] = (df_tmp["Sample"] / len(df_tmp)) * MINUTES_LENGTH # * 1e9                
         if kde:
             cut_mean = 0.0001
         else:
@@ -1132,22 +1231,28 @@ def plot_paper_noise_long_instance_type(data_type, data_type_human):
         #rows = 3
         #cols = 3
         #fig, axes = plt.subplots(rows, cols, figsize=(8, 6), sharex=True, sharey=True)
+
+        rows = math.ceil(len(providers) / 5)
+        cols = min(5, len(providers))
+
         fig = plt.figure(constrained_layout=True, figsize=(9,4))
-        gs0 = fig.add_gridspec(2, 1)
+        gs0 = fig.add_gridspec(rows, 1)
 
-        gs00 = gs0[0].subgridspec(1, 4)
-        gs01 = gs0[1].subgridspec(1, 3)
-
+        gs00 = gs0[0].subgridspec(1, cols)
         for a in range(1):
-            for b in range(4):
+            for b in range(cols):
                 fig.add_subplot(gs00[a, b])
-        for a in range(1):
-            for b in range(3):
-                fig.add_subplot(gs01[a, b])
+        
+        if rows > 1:
+            gs01 = gs0[1].subgridspec(1, 3)
+            for a in range(1):
+                for b in range(3):
+                    fig.add_subplot(gs01[a, b])
+
         axes = fig.get_axes()
     else:
-        rows = 1
-        cols = 4
+        rows = math.ceil(len(providers) / 5)
+        cols = min(5, len(providers))
         fig, axes = plt.subplots(rows, cols, figsize=(8, 2.5), sharex=True, sharey=True)
     if "os" in data_type:
         x_col = "Time (s)"
@@ -1164,7 +1269,7 @@ def plot_paper_noise_long_instance_type(data_type, data_type_human):
     i = 0
     providers_iterate = providers
     if not "os" in data_type:
-        providers_iterate = ["snellius"]
+        providers_iterate = providers
     for provider in providers_iterate:
         df = pd.DataFrame()
         j = 0
@@ -1193,7 +1298,7 @@ def plot_paper_noise_long_instance_type(data_type, data_type_human):
                     ax.set(ylim=(1, 512))
             if data_type == "os_noise":                
                 ax.set_yscale("log")
-                ax.set(ylim=(10,1000), xlim=(0,5), xticks=[0,1,2,3,4,5], xticklabels=[0,1,2,3,4,5])
+                ax.set(ylim=(-20,1000), xlim=(0,5), xticks=[0,1,2,3,4,5], xticklabels=[0,1,2,3,4,5])
                 if i != 0 and i != 4:
                     ax.set_ylabel(None)
                     ax.set(yticklabels=[])
@@ -1232,7 +1337,7 @@ def plot_paper_noise_long_time_alloc(data_type, data_type_human):
     i = 0
     palette_dict = {}
     legend_elements = []
-    markers = {"snellius" : 'D'}
+    markers = {"GCP" : 'o', "AWS" : 'D', "Daint" : 's', "Azure" : '^', "Alps" : "P", "DEEP-EST" : 'X', "Oracle" : 'p', "snellius-short-rome" : 'v', "snellius-long-rome" : 'h', "snellius-long-genoa" : 'h', "snellius-short-genoa" : 'H'}
     for provider in providers:
         palette_dict[provider] = sns.color_palette()[i]    
         legend_elements += [Line2D([0], [0], marker=markers[provider], lw=0, color=sns.color_palette()[i], label=provider)]
@@ -1245,7 +1350,7 @@ def plot_paper_noise_long_time_alloc(data_type, data_type_human):
             #ax = axes[int(i / cols)][i % cols]
             ax = axes[i]
             ax.set_title(placement)
-            for provider in ["snellius"]:
+            for provider in providers:
                 df_tmp = get_noise_single(provider, instance_type_t[provider], placement, time, data_type, ax, j, kde)
                 if df_tmp is not None:
                     df = pd.concat([df, df_tmp])
@@ -1348,16 +1453,17 @@ def main():
     with open("../data/description.csv", mode='r') as infile:
         reader = csv.reader(infile)    
         global paths
-        paths = {(rows[0],rows[1],rows[2],rows[3]):"" + rows[4] for rows in reader}
-        print(paths)
+        paths = {(rows[0],rows[1],rows[2],rows[3]):"" + rows[4] for rows in reader if len(rows) >= 5}
+        print("your path $$$$$$")
+        # print(paths)
 
     if args.full:
         # plot_noise("noise_lat", "Latency (us)")
         # plot_noise("noise_bw", "Bandwidth (Gb/s)")
         # plot_noise("os_noise", "Detour (us)")
-        plot_noise_long("noise_lat", "Latency (us)")
-        plot_noise_long("noise_bw", "Bandwidth (Gb/s)")    
-        plot_noise_long("os_noise", "Detour (us)")    
+        # plot_noise_long("noise_lat", "Latency (us)")
+        # plot_noise_long("noise_bw", "Bandwidth (Gb/s)")    
+        # plot_noise_long("os_noise", "Detour (us)")    
 
         for metric in ["unidirectional_lat", "unidirectional_bw", "bidirectional_lat", "bidirectional_bw"]:
             plot_lat_bw(metric, metric_human[metric], "any", "any")
@@ -1376,92 +1482,40 @@ def main():
                     plot_lat_bw_conc("unidirectional_bw", "Bandwidth (Gb/s)", time, placement, instance_type, "conc")
                     plot_lat_bw_conc("unidirectional_lat", "RTT/2 (us)", time, placement, instance_type, "stripe")    
                     plot_lat_bw_conc("unidirectional_bw", "Bandwidth (Gb/s)", time, placement, instance_type, "stripe")
-                    #plot_lat_bw_sw("unidirectional_lat", "RTT/2 (us)", time, placement, instance_type)
-                    #plot_lat_bw_sw("unidirectional_bw", "Bandwidth (Gb/s)", time, placement, instance_type)                
+                    plot_lat_bw_sw("unidirectional_lat", "RTT/2 (us)", time, placement, instance_type)
+                    plot_lat_bw_sw("unidirectional_bw", "Bandwidth (Gb/s)", time, placement, instance_type)                
     else:
-        print("noise_lat")
-        # plot_noise_long("noise_lat", "Latency (us)")
-        # plot_paper_lat_bw()
-        plot_noise_long("noise_bw", "Bandwidth (Gb/s)")            
-        #for bol in ["noise_bw", "noise_lat"]:
+        #plot_noise_long("noise_lat", "Latency (us)")
+        #plot_noise_long("noise_bw", "Bandwidth (Gb/s)")            
+        # for bol in ["noise_bw", "noise_lat"]:
         #    plot_noise_net_alltime(bol, "violin")
-        #    #plot_noise_net_alltime(bol, "box")        
+        #    plot_noise_net_alltime(bol, "box")        
         #plot_paper_netnoise()                
         #plot_paper_noise_long_time_alloc("os_noise", "Detour (us)") # OK but not shown in the paper
 
 
         # Plots used in the paper     
         #for provider in ["AWS", "Azure", "GCP", "Oracle"]:
-        #    plot_paper_hoverboard(provider) # OK        
-        plot_paper_noise_long_instance_type("os_noise", "Detour (us)") # OK        
-        plot_paper_noise_long_time_alloc("noise_bw", "Normalized Bandwidth") # OK                
-        plot_paper_noise_long_instance_type("noise_bw", "Normalized Bandwidth") # OK                
-        plot_paper_striping("stripe") # OK        
+        #    plot_paper_hoverboard(provider) # OK  
+
+
+        # plot_paper_noise_long_instance_type("os_noise", "Detour (us)") # OK        
+        # plot_paper_noise_long_time_alloc("noise_bw", "Normalized Bandwidth") # OK                
+        # plot_paper_noise_long_instance_type("noise_bw", "Normalized Bandwidth") # OK                
+        # plot_paper_striping("stripe") # OK        
         plot_paper_striping("conc") # OK
-        plot_paper_lat_bw_instances("unidirectional_bw") # OK
-        plot_paper_uni_vs_bi() # OK
-        plot_paper_noise_long_time_alloc("noise_lat", "Normalized Latency") # OK 
-        plot_paper_noise_long_instance_type("noise_lat", "Normalized Latency") # OK        
-        plot_paper_lat_bw() # OK
-        #plot_logGP()
-        #plot_paper_noise_long_time_alloc("noise_lat", "Latency (us)") 
-        #plot_paper_noise_long_time_alloc("noise_bw", "Bandwidth (Gb/s)")
+        # plot_paper_lat_bw_instances("unidirectional_bw") # OK
+        # plot_paper_uni_vs_bi() # OK
+        # plot_paper_noise_long_time_alloc("noise_lat", "Normalized Latency") # OK 
+        # plot_paper_noise_long_instance_type("noise_lat", "Normalized Latency") # OK        
+        # plot_paper_lat_bw() # OK
+
+
+
+        # plot_logGP()
+        # plot_paper_noise_long_time_alloc("noise_lat", "Latency (us)") 
+        # plot_paper_noise_long_time_alloc("noise_bw", "Bandwidth (Gb/s)")
+
 
 if __name__ == "__main__":
     main()
-
-
-# Notes
-# - osu_bw on GCP HPC instances:
-#   # OSU MPI Bandwidth Test v5.9
-#   # Size      Bandwidth (MB/s)
-#   1                       0.68
-#   2                       1.37
-#   4                       2.77
-#   8                       5.61
-#   16                     11.72
-#   32                     21.07
-#   64                     42.99
-#   128                    83.94
-#   256                   148.56
-#   512                   218.05
-#   1024                  275.57
-#   2048                  481.64
-#   4096                  849.27
-#   8192                 1331.90
-#   16384                1899.97
-#   32768                2493.93
-#   65536                2851.43
-#   131072               3441.27
-#   262144               3988.36
-#   524288               4235.09
-#   1048576              4106.00
-#   2097152              3865.17
-#   4194304              3934.70
-#
-# - osu_bw on Azure Normal instances:
-#   ## OSU MPI Bandwidth Test v5.9
-#   # Size      Bandwidth (MB/s)
-#   1                       0.31
-#   2                       0.64
-#   4                       1.26
-#   8                       2.59
-#   16                      5.13
-#   32                     10.32
-#   64                     19.55
-#   128                    40.51
-#   256                    79.75
-#   512                   144.95
-#   1024                  251.17
-#   2048                  437.43
-#   4096                  551.49
-#   8192                 1302.09
-#   16384                1851.28
-#   32768                1966.13
-#   65536                1858.07
-#   131072               2494.07
-#   262144               2110.88
-#   524288               2256.79
-#   1048576              3276.07
-#   2097152              3298.61
-#   4194304              3298.61

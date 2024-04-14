@@ -1,21 +1,27 @@
 #!/bin/bash
-mkdir -p out/paper
-mkdir -p out/paper_pre
-mkdir -p out/simulations
+postfix="2"
+
+# Create directories with postfix
+mkdir -p out${postfix}/paper${postfix}
+mkdir -p out${postfix}/paper_pre${postfix}
+mkdir -p out${postfix}/simulations${postfix}
 
 # Generate plots from benchmark data
-./plot.py
-mv out/paper_pre/unidirectional_bw_stripe.pdf out/paper/fig1.pdf
-mv out/paper_pre/unidirectional_bw_conc.pdf out/paper/fig2.pdf
-mv out/paper_pre/lat_bw.pdf out/paper/fig3.pdf
-mv out/paper_pre/uni_vs_bi.pdf out/paper/fig4.pdf
-mv out/paper_pre/unidirectional_bw_instances.pdf out/paper/fig5.pdf
-mv out/paper_pre/hoverboard.pdf out/paper/fig6.pdf
-mv out/paper_pre/os_noise_instance_type_long.pdf out/paper/fig9.pdf
-mv out/paper_pre/noise_lat_time_alloc_long.pdf out/paper/fig10.pdf
-mv out/paper_pre/noise_lat_instance_type_long.pdf out/paper/fig11.pdf
-mv out/paper_pre/noise_bw_time_alloc_long.pdf out/paper/fig12.pdf
-mv out/paper_pre/noise_bw_instance_type_long.pdf out/paper/fig13.pdf
+python3 plot.py
+
+# Move and rename figures with postfix
+mv out/paper_pre/unidirectional_bw_stripe.pdf out${postfix}/paper${postfix}/fig1${postfix}.pdf
+mv out/paper_pre/unidirectional_bw_conc.pdf out${postfix}/paper${postfix}/fig2${postfix}.pdf
+mv out/paper_pre/lat_bw.pdf out${postfix}/paper${postfix}/fig3${postfix}.pdf
+mv out/paper_pre/uni_vs_bi.pdf out${postfix}/paper${postfix}/fig4${postfix}.pdf
+mv out/paper_pre/unidirectional_bw_instances.pdf out${postfix}/paper${postfix}/fig5${postfix}.pdf
+mv out/paper_pre/hoverboard.pdf out${postfix}/paper${postfix}/fig6${postfix}.pdf
+mv out/paper_pre/os_noise_instance_type_long.pdf out${postfix}/paper${postfix}/fig9${postfix}.pdf
+mv out/paper_pre/noise_lat_time_alloc_long.pdf out${postfix}/paper${postfix}/fig10${postfix}.pdf
+mv out/paper_pre/noise_lat_instance_type_long.pdf out${postfix}/paper${postfix}/fig11${postfix}.pdf
+mv out/paper_pre/noise_bw_time_alloc_long.pdf out${postfix}/paper${postfix}/fig12${postfix}.pdf
+mv out/paper_pre/noise_bw_instance_type_long.pdf out${postfix}/paper${postfix}/fig13${postfix}.pdf
+
 
 # Generate plots from simulation data
 # ./plot_sim.py
